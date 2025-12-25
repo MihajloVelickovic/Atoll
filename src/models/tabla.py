@@ -32,6 +32,7 @@ class Tabla:
                         granica = False
                     self.raspored_polja.append(Polje(slovo=slovo, broj=j, zauzeto=zauzeto, granica=granica))
         self.obrisi_nepostojece()
+        self.definisi_susedstva()
 
     def obrisi_nepostojece(self):
         ids = []
@@ -52,3 +53,22 @@ class Tabla:
     def prikaz_polja(self):
         for i in self.raspored_polja:
             print(i.slovo, i.broj, i.zauzeto)
+
+    def definisi_susedstva(self):
+        for polje in self.raspored_polja:
+            for i in range(-1, 2):
+                if i == -1:
+                    ids = [-1, 0]
+                elif i == 0:
+                    ids = [-1, 1]
+                elif i == 1:
+                    ids = [0, 1]
+                else:
+                    return
+
+                for j in ids:
+                    slovo = chr(ord('A') + ((ord(polje.slovo) - ord('A') + i) % 26))
+                    sused = Polje(slovo = slovo, broj = polje.broj+j)
+                    if sused in self.raspored_polja and sused != polje:
+                        polje.susedi.append(self.raspored_polja.index(sused))
+
