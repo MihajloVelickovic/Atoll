@@ -1,6 +1,6 @@
-from src.models.tabla import Tabla
+from models.igra import Igra
 
-a = Tabla(7)
+if __name__ == "__main__":
 
-a.prikaz_polja()
-
+    igra = Igra.konstrukcija()
+    igra.tabla.prikaz_polja()
