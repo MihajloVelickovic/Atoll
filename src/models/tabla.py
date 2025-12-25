@@ -1,5 +1,5 @@
+from enums.boje import Boje
 from src.models.polje import Polje
-
 
 class Tabla:
     def __init__(self, n):
@@ -8,31 +8,89 @@ class Tabla:
         self.generisi_tablu()
 
     def generisi_tablu(self):
-        korak = 0
-        for i in range(0, 2 * self.n + 1):
-            slovo = chr(ord('A') + ((ord('Z') - ord('A') + i) % 26))
-            if i < self.n:
-                for j in range(0, self.n + 1 + korak):
-                    if i == 0 or j == self.n + korak or j == 0:
-                        zauzeto = True
-                        granica = True
-                    else:
-                        zauzeto = False
-                        granica = False
-                    self.raspored_polja.append(Polje(slovo=slovo, broj=j, zauzeto=zauzeto, granica=granica))
-                korak += 1
-            else:
-                korak -= 1
-                for j in range(i-self.n, 2*self.n+1):
-                    if i == 0 or j == 2 * self.n or j == i - self.n:
-                        zauzeto = True
-                        granica = True
-                    else:
-                        zauzeto = False
-                        granica = False
-                    self.raspored_polja.append(Polje(slovo=slovo, broj=j, zauzeto=zauzeto, granica=granica))
+        self.generisi_sva_polja()
         self.obrisi_nepostojece()
         self.definisi_susedstva()
+
+    def generisi_sva_polja(self):
+        korak = 0
+        # for petlja po slovima od Z (A-1) do A+2*n
+        for i in range(0, 2 * self.n + 1):
+            # mora ovako da bi slovo preslo sa Z na A kada poraste I
+            slovo = chr(ord('A') + ((ord('Z') - ord('A') + i) % 26))
+            # prvi if, zaduzen za levu polovinu table, kada sa svakim slovom raste broj polja u koloni
+            if i < self.n:
+                # brojevi od 0 do potrebnog za kolonu
+                for j in range(0, self.n + 1 + korak):
+                    # slovo Z, uvek granicno
+                    if i == 0:
+                        granica = True
+                        # prva polovina redova (brojeva)
+                        if j < (self.n + 1)/2:
+                            boja = Boje.CRNA
+                        # druga polovina redova (brojeva)
+                        else:
+                            boja = Boje.BELA
+
+                    # prvi prvcati red na tabli, onaj gde su
+                    # vec postavljeni kamencici pre pocetka igre
+                    elif j == 0:
+                        granica = True
+                        # prva polovina kolona (slova)
+                        if i < (self.n + 1) / 2:
+                            boja = Boje.BELA
+                        # druga polovina kolona (slova)
+                        else:
+                            boja = Boje.CRNA
+
+                    # isti slucaj kao prosli if ali poslednji red
+                    elif j == self.n + korak:
+                        granica = True
+                        if i < (self.n + 1) / 2:
+                            boja = Boje.CRNA
+                        else:
+                            boja = Boje.BELA
+
+                    # sva polja sa prve polovine table koja nisu krajnja
+                    # to jest, sva slobodna polja kada igra pocne
+                    else:
+                        boja = None
+                        granica = False
+
+                    self.raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, boja=boja))
+                korak += 1
+
+            # sve isto kao prosli if, ali druga polovina table, kada opadaju redovi svakoj koloni
+            else:
+                korak -= 1
+                for j in range(i - self.n, 2 * self.n + 1):
+
+                    if i == 2 * self.n:
+                        granica = True
+                        if j < self.n + (self.n + 1)/2:
+                            boja = Boje.BELA
+                        else:
+                            boja = Boje.CRNA
+
+                    elif j == i - self.n:
+                        granica = True
+                        if i < self.n + (self.n + 1) / 2:
+                            boja = Boje.BELA
+                        else:
+                            boja = Boje.CRNA
+
+                    elif j == 2 * self.n:
+                        granica = True
+                        if i < self.n + (self.n + 1) / 2:
+                            boja = Boje.CRNA
+                        else:
+                            boja = Boje.BELA
+
+                    else:
+                        boja = None
+                        granica = False
+
+                    self.raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, boja=boja))
 
     def obrisi_nepostojece(self):
         ids = []
@@ -48,11 +106,11 @@ class Tabla:
                     return
             for j in ids:
                 slovo = chr(ord('A') + ((ord('Z') - ord('A') + i) % 26))
-                self.raspored_polja.remove(Polje(slovo=slovo, broj=j, zauzeto=True, granica=True))
+                self.raspored_polja.remove(Polje(slovo=slovo, broj=j))
 
     def prikaz_polja(self):
         for i in self.raspored_polja:
-            print(i.slovo, i.broj, i.zauzeto)
+            print(i.slovo, i.broj, i.boja)
 
     def definisi_susedstva(self):
         for polje in self.raspored_polja:

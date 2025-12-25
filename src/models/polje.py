@@ -1,10 +1,10 @@
 class Polje:
-    def __init__(self, slovo, broj, zauzeto=False, granica=False):
+    def __init__(self, slovo, broj, granica=False, boja = None):
         self.slovo = slovo
         self.broj = broj
-        self.zauzeto = zauzeto
         self.granica = granica
         self.susedi = []
+        self.boja = boja
 
     def __eq__(self, other):
         if not isinstance(other, Polje):
