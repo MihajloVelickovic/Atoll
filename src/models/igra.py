@@ -1,6 +1,6 @@
-from enums.boje import Boje
-from models.igrac import Igrac
-from models.tabla import Tabla
+from src.enums.boje import Boje
+from src.models.igrac import Igrac
+from src.models.tabla import Tabla
 
 class Igra:
 
