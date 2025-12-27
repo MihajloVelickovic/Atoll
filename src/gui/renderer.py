@@ -1,6 +1,6 @@
 import pygame
 import math
-from src.models import polje
+
 
 
 def axial_to_pixel(q, r, size):
@@ -24,7 +24,6 @@ def koordinate_polja(polje, tabla, size, offset_x, offset_y):
 
 def nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y):
     """Crta jedno heksagonalno polje (FLAT-TOP orijentacija)"""
-    font = pygame.font.Font(None, 18)
     q, r = tabla.koordinate_polja(polje)
     x, y = axial_to_pixel(q, r, size)
     cx = x + offset_x
@@ -50,8 +49,9 @@ def nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y):
     # Nacrtaj ivicu
     pygame.draw.polygon(screen, (100, 90, 70), points, 2)
 
-    # Dodaj tekst sa koordinatama
+    # Dodaj tekst SAMO za negranična polja
     if not polje.granica:
+        font = pygame.font.Font(None, 18)
         label = f"{polje.slovo}{polje.broj}"
         text = font.render(label, True, (60, 60, 60))
         text_rect = text.get_rect(center=(cx, cy))
@@ -59,8 +59,17 @@ def nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y):
 
 
 def nacrtaj_labele(screen, tabla, size, offset_x, offset_y):
-    font = pygame.font.Font(None, 18)
-    for polje in tabla.raspored_polja:
+    """Crta labele (slova i brojeve) van graničnih polja"""
+    font = pygame.font.Font(None, 22)
+
+    n = tabla.n
+
+    # Dinamički odredi middle slovo (G za n=7, E za n=5, C za n=3)
+    # Z je kolona 0, A je kolona 1, pa middle je kolona n
+    middle_slovo = chr(ord('Z') + n) if n == 0 else chr(ord('A') + n - 1)
+
+    # Prvo nacrtaj labele za granična polja
+    for polje in tabla.get_raspored_polja:
         if not polje.granica:
             continue
 
@@ -69,80 +78,100 @@ def nacrtaj_labele(screen, tabla, size, offset_x, offset_y):
         cx = x + offset_x
         cy = y + offset_y
 
-        if polje.slovo == 'Z' or polje.slovo == 'N':
-            label = f"{polje.broj}"
-        else:
-            label = f"{polje.slovo}"
-
+        # Odredi labelu i offset
         label_offset_x, label_offset_y = 0, 0
 
         col = 0 if polje.slovo == 'Z' else ord(polje.slovo) - ord('A') + 1
         row = polje.broj
 
+        # LEVA VERTIKALA (Z kolona) - brojevi levo
         if polje.slovo == 'Z':
-            # Leva vertikala - pomeri levo
-            label_offset_x = -size * 1.8
-        elif polje.slovo == 'N':
-            # Desna vertikala - pomeri desno
-            label_offset_x = size * 1.8
-        elif row == 0 and col >= 1 and col <= tabla.n:
-            # Gornja leva dijagonala (A0, B0, C0, D0, E0, F0)
+            label = f"{polje.broj}"
+            label_offset_x = -size * 1.5
+            label_offset_y = size * 0.8
+
+        # DESNA VERTIKALA (N kolona) - brojevi desno
+        elif col == 2 * n:  # Dinamički - poslednja kolona
+            label = f"{polje.broj}"
+            label_offset_x = size * 1.5
+            label_offset_y = -size * 0.8
+
+        # GORNJA LEVA DIJAGONALA (A do middle-1 sa row=0)
+        elif row == 0 and 1 <= col < n:
+            label = f"{polje.slovo}"
+            #label_offset_x = -size * 1.3
             label_offset_y = -size * 1.5
-        elif row == 0 and col == tabla.n:
-            # G0 - vrh gore
+
+        # GORNJI VRH (middle slovo sa row=0)
+        elif row == 0 and col == n:
+            label = f"{polje.slovo}"
             label_offset_y = -size * 1.5
-        elif col > tabla.n and row == col - tabla.n:
-            # Gornja desna dijagonala (H0, I1, J2, K3, L4, M5)
+
+        # GORNJA DESNA DIJAGONALA (middle+1 do pred-poslednje kolone gde je row=col-n)
+        elif col > n and col < 2 * n and row == col - n:
+            label = f"{polje.slovo}"
+            #label_offset_x = size * 1.3
             label_offset_y = -size * 1.5
-        elif col <= tabla.n and row == tabla.n + col:
-            # Donja leva dijagonala (A7, B8, C9, D10, E11, F12)
-            label_offset_y = size * 1.5
-        elif row == 2 * tabla.n and col == tabla.n:
-            # G14 - vrh dole
-            label_offset_y = size * 1.5
-        elif col > tabla.n and row == 2 * tabla.n:
-            # Donja desna dijagonala (H14, I14, J14, K14, L14, M14)
+
+        # DONJA LEVA DIJAGONALA (A do middle-1 gde je row=n+col)
+        elif 1 <= col < n and row == n + col:
+            label = f"{polje.slovo}"
+            #label_offset_x = -size * 1.3
             label_offset_y = size * 1.5
 
-        text = font.render(label, True, (200, 200, 200))
+        # DONJI VRH (middle slovo sa row=2*n)
+        elif col == n and row == 2 * n:
+            label = f"{polje.slovo}"
+            label_offset_y = size * 1.5
+
+        # DONJA DESNA DIJAGONALA (middle+1 do pred-poslednje sa row=2*n)
+        elif col > n and col < 2 * n and row == 2 * n:
+            label = f"{polje.slovo}"
+            #label_offset_x = size * 1.3
+            label_offset_y = size * 1.5
+
+        else:
+            # Fallback
+            continue
+
+        text = font.render(label, True, (220, 220, 220))
         text_rect = text.get_rect(center=(cx + label_offset_x, cy + label_offset_y))
         screen.blit(text, text_rect)
 
-    g_gornje = None
-    g_donje = None
-    for polje in tabla.raspored_polja:
-        if polje.slovo == 'G' and polje.broj == 1:
-            g_gornje = polje
-        if polje.slovo == 'G' and polje.broj == 13:
-            g_donje = polje
+    # Dodaj dodatne middle labele iznad prvog i ispod poslednjeg neegraničnog middle polja
+    middle_polja = [p for p in tabla.get_raspored_polja
+                    if p.slovo == middle_slovo and not p.granica]
 
-    if g_gornje:
-        q, r = tabla.koordinate_polja(g_gornje)
+    if middle_polja:
+        # Najmanji broj (obično 1)
+        prvi = min(middle_polja, key=lambda p: p.broj)
+        q, r = tabla.koordinate_polja(prvi)
         x, y = axial_to_pixel(q, r, size)
         cx = x + offset_x
         cy = y + offset_y - size * 3
 
-        text = font.render("G", True, (200, 200, 200))
+        text = font.render(middle_slovo, True, (220, 220, 220))
         text_rect = text.get_rect(center=(cx, cy))
         screen.blit(text, text_rect)
 
-    if g_donje:
-        q, r = tabla.koordinate_polja(g_donje)
+        # Najveći broj
+        poslednji = max(middle_polja, key=lambda p: p.broj)
+        q, r = tabla.koordinate_polja(poslednji)
         x, y = axial_to_pixel(q, r, size)
         cx = x + offset_x
         cy = y + offset_y + size * 3
 
-        text = font.render("G", True, (200, 200, 200))
+        text = font.render(middle_slovo, True, (220, 220, 220))
         text_rect = text.get_rect(center=(cx, cy))
         screen.blit(text, text_rect)
 
 
 def izracunaj_offset(tabla, size, screen_width, screen_height):
-    # Izračunava offset za centriranje table na ekranu
+    """Izračunava offset za centriranje table na ekranu"""
     min_q = min_r = float('inf')
     max_q = max_r = float('-inf')
 
-    for polje in tabla.raspored_polja:
+    for polje in tabla.get_raspored_polja:
         q, r = tabla.koordinate_polja(polje)
         min_q = min(min_q, q)
         max_q = max(max_q, q)
@@ -169,9 +198,11 @@ def nacrtaj_tablu(screen, tabla, size=30):
 
     offset_x, offset_y = izracunaj_offset(tabla, size, screen_width, screen_height)
 
-    for polje in tabla.raspored_polja:
+    # Nacrtaj sva polja
+    for polje in tabla.get_raspored_polja:
         nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y)
 
+    # Nacrtaj labele van graničnih polja
     nacrtaj_labele(screen, tabla, size, offset_x, offset_y)
 
     return offset_x, offset_y

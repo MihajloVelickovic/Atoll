@@ -1,4 +1,4 @@
-from enums.boje import Boje
+from src.enums.boje import Boje
 from src.models.polje import Polje
 
 class Tabla:
@@ -11,6 +11,14 @@ class Tabla:
         self.__generisi_sva_polja()
         self.__obrisi_nepostojece()
         self.__definisi_susedstva()
+
+    @property #pretvara metodu u atribut
+    def get_raspored_polja(self):
+        return self.__raspored_polja
+
+    @property #pretvara metodu u atribut
+    def n(self):
+        return self.__n
 
     def __generisi_sva_polja(self):
         korak = 0
@@ -130,3 +138,16 @@ class Tabla:
                     if sused in self.__raspored_polja and sused != polje:
                         polje.susedi.append(self.__raspored_polja.index(sused))
 
+    def koordinate_polja(self, polje):
+        # Slovo -> col
+        if polje.slovo == 'Z':
+            col = 0
+        else:
+            col = ord(polje.slovo) - ord('A') + 1
+
+        row = polje.broj
+
+        q = col - self.__n
+        r = row - col
+
+        return q, r

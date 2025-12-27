@@ -1,4 +1,4 @@
-from models.igra import Igra
+from src.models.igra import Igra
 import pygame
 from src.models.tabla import Tabla
 from src.gui.renderer import nacrtaj_tablu
@@ -10,10 +10,10 @@ if __name__ == "__main__":
     igra.tabla.prikaz_polja()
 
     pygame.init()
-    screen = pygame.display.set_mode((1400, 900))
+    screen = pygame.display.set_mode((1600, 1200))
     pygame.display.set_caption("Atoll")
 
-    tabla = Tabla(n=7)
+    tabla = igra.tabla
     HEX_SIZE = 30
 
     running = True

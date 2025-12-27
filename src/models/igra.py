@@ -59,6 +59,13 @@ class Igra:
             print(ex)
             Igra.__unos_dimenzija()
 
+    @property
+    def get_dimenzije(self):
+        return self.tabla.n
+    @property
+    def get_tabla(self):
+        return self.tabla
+
     @staticmethod
     def __unos_podataka_o_partiji(poruka):
         try:
