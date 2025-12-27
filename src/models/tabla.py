@@ -13,10 +13,10 @@ class Tabla:
         self.__definisi_susedstva()
 
     @property #pretvara metodu u atribut
-    def get_raspored_polja(self):
+    def raspored_polja(self):
         return self.__raspored_polja
 
-    @property #pretvara metodu u atribut
+    @property
     def n(self):
         return self.__n
 

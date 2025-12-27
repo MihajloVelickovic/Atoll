@@ -69,7 +69,7 @@ def nacrtaj_labele(screen, tabla, size, offset_x, offset_y):
     middle_slovo = chr(ord('Z') + n) if n == 0 else chr(ord('A') + n - 1)
 
     # Prvo nacrtaj labele za granična polja
-    for polje in tabla.get_raspored_polja:
+    for polje in tabla.raspored_polja:
         if not polje.granica:
             continue
 
@@ -139,7 +139,7 @@ def nacrtaj_labele(screen, tabla, size, offset_x, offset_y):
         screen.blit(text, text_rect)
 
     # Dodaj dodatne middle labele iznad prvog i ispod poslednjeg neegraničnog middle polja
-    middle_polja = [p for p in tabla.get_raspored_polja
+    middle_polja = [p for p in tabla.raspored_polja
                     if p.slovo == middle_slovo and not p.granica]
 
     if middle_polja:
@@ -171,7 +171,7 @@ def izracunaj_offset(tabla, size, screen_width, screen_height):
     min_q = min_r = float('inf')
     max_q = max_r = float('-inf')
 
-    for polje in tabla.get_raspored_polja:
+    for polje in tabla.raspored_polja:
         q, r = tabla.koordinate_polja(polje)
         min_q = min(min_q, q)
         max_q = max(max_q, q)
@@ -199,7 +199,7 @@ def nacrtaj_tablu(screen, tabla, size=30):
     offset_x, offset_y = izracunaj_offset(tabla, size, screen_width, screen_height)
 
     # Nacrtaj sva polja
-    for polje in tabla.get_raspored_polja:
+    for polje in tabla.raspored_polja:
         nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y)
 
     # Nacrtaj labele van graničnih polja
