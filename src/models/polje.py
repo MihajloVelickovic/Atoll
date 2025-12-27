@@ -11,15 +11,3 @@ class Polje:
             return False
         return (self.slovo == other.slovo and
                 self.broj == other.broj)
-
-    @staticmethod
-    def belo_polje():
-        return "\U0001F7E2"
-
-    @staticmethod
-    def crno_polje(self):
-        return "\U0001F534"
-
-    @staticmethod
-    def prazno_polje(self):
-        return "\u25EF"

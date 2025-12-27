@@ -20,6 +20,14 @@ class Igra:
         self.beli_prvi = beli_prvi
         self.__initialized = True
 
+    @property
+    def get_dimenzije(self):
+        return self.tabla.n
+
+    @property
+    def get_tabla(self):
+        return self.tabla
+
     @classmethod
     def konstrukcija(cls):
         if cls.__instanca is not None:
@@ -57,14 +65,7 @@ class Igra:
             return n
         except Exception as ex:
             print(ex)
-            Igra.__unos_dimenzija()
-
-    @property
-    def get_dimenzije(self):
-        return self.tabla.n
-    @property
-    def get_tabla(self):
-        return self.tabla
+            return Igra.__unos_dimenzija()
 
     @staticmethod
     def __unos_podataka_o_partiji(poruka):
@@ -76,5 +77,5 @@ class Igra:
             return bool(n-1)
         except Exception as ex:
             print(ex)
-            Igra.__unos_podataka_o_partiji(poruka)
+            return Igra.__unos_podataka_o_partiji(poruka)
 

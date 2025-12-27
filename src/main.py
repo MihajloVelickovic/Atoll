@@ -33,8 +33,8 @@ if __name__ == "__main__":
 
     tabla = igra.tabla
     # HEX_SIZE = 30
-    #sirina polja = 2 * HEX_SIZE
-    #visina polja = √3 × HEX_SIZE
+    # sirina polja = 2 * HEX_SIZE
+    # visina polja = sqrt(3) × HEX_SIZE
     max_board_height = screen_height * 0.9
     HEX_SIZE = max_board_height / ((2 * tabla.n + 1) * math.sqrt(3))
     running = True
