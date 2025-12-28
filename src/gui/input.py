@@ -1,4 +1,5 @@
 from src.gui.renderer import koordinate_polja
+from src.enums.boje import Boje
 from math import pi, sin, cos
 
 def nadji_kliknuto_polje(clicked_position, tabla, size_x, size_y, offset_x, offset_y):
@@ -56,3 +57,26 @@ def transliraj_tacku(x, y, tx, ty):
         for j, p in enumerate(point):
             new_coord[i] += p * row[j]
     return new_coord
+
+
+def primeni_hover_efekat(polje):
+    """Primenjuje hover boju na polje i vraća originalnu boju."""
+    if polje is None:
+        return None
+
+    originalna_boja = polje.boja
+    if polje.boja == Boje.BEZ:
+        polje.boja = Boje.BEZ_TAMNA
+    elif polje.boja == Boje.CRNA:
+        polje.boja = Boje.TAMNOSIVA
+    elif polje.boja == Boje.BELA:
+        polje.boja = Boje.SVETLOSIVA
+
+    return originalna_boja
+
+
+def ukloni_hover_efekat(polje, originalna_boja):
+    """Vraća originalnu boju polju."""
+    if polje is not None and originalna_boja is not None:
+        polje.boja = originalna_boja
+

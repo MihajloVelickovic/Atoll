@@ -62,7 +62,7 @@ class Tabla:
                     # sva polja sa prve polovine table koja nisu krajnja
                     # to jest, sva slobodna polja kada igra pocne
                     else:
-                        boja = None
+                        boja = Boje.BEZ
                         granica = False
 
                     self.__raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, boja=boja))
@@ -95,7 +95,7 @@ class Tabla:
                             boja = Boje.BELA
 
                     else:
-                        boja = None
+                        boja = Boje.BEZ
                         granica = False
 
                     self.__raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, boja=boja))

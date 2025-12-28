@@ -1,6 +1,8 @@
 import pygame
 import math
 
+from enums.boje import Boje
+
 
 def axial_to_pixel(q, r, size):
     # konvertuje axial koordinate u pixel koordinate.
@@ -33,10 +35,7 @@ def nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y):
         points.append((px, py))
 
     # Odredi boju
-    if polje.boja is None:
-        color = (220, 200, 160)  # Bež boja
-    else:
-        color = polje.boja.value
+    color = polje.boja.value
 
     # nacrtaj popunjeni heksagon
     pygame.draw.polygon(screen, color, points)

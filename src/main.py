@@ -1,7 +1,7 @@
 from enums.boje import Boje
 from src.models.igra import Igra
 from src.gui.renderer import nacrtaj_tablu
-from src.gui.input import nadji_kliknuto_polje
+from src.gui.input import nadji_kliknuto_polje, primeni_hover_efekat, ukloni_hover_efekat
 from math import sqrt
 import ctypes
 import platform
@@ -36,6 +36,8 @@ if __name__ == "__main__":
     visina_polja = sqrt(3) * sirina_polja
     running = True
     offset_x, offset_y = 0, 0
+    prethodno_hover_polje = None
+    originalna_boja = None
 
     while running:
         for event in pygame.event.get():
@@ -44,7 +46,18 @@ if __name__ == "__main__":
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 kliknuto = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
                 if kliknuto:
+                    #TODO: obradi klik (igranje poteza)
                     print(f"Kliknuto: {kliknuto.slovo}{kliknuto.broj}")
+            if event.type == pygame.MOUSEMOTION:
+                hover = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
+
+                # ako se promenilo polje
+                if hover != prethodno_hover_polje:
+                    # vrati boju prethodnom
+                    ukloni_hover_efekat(prethodno_hover_polje, originalna_boja)
+                    # primeni hover na novo
+                    originalna_boja = primeni_hover_efekat(hover)
+                    prethodno_hover_polje = hover
 
         screen.fill(Boje.SIVA_POZADINA.value)
         offset_x, offset_y = nacrtaj_tablu(screen, tabla, sirina_polja)
