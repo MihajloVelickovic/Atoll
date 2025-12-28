@@ -79,4 +79,3 @@ class Igra:
         except Exception as ex:
             print(ex)
             return Igra.__unos_podataka_o_partiji(poruka)
-

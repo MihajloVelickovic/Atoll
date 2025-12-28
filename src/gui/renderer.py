@@ -1,8 +1,6 @@
 import pygame
 import math
 
-from enums.boje import Boje
-
 def axial_to_pixel(q, r, size):
     # konvertuje axial koordinate u pixel koordinate.
     # flattop orijentacija (ravna ivica gore/dole).

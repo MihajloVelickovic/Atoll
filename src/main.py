@@ -8,7 +8,7 @@ import platform
 import pygame
 
 if __name__ == "__main__":
-    # postavljanje dpi awareness
+    # postavljanje dpi awareness za Windows
     if platform.system() == "Windows":
         try:
             # 8.1 +
@@ -29,6 +29,7 @@ if __name__ == "__main__":
     screen_width = int(info.current_w * 0.7)
     screen_height = int(info.current_h * 0.80)
     screen = pygame.display.set_mode((screen_width, screen_height))
+    pygame.display.set_caption('Atoll')
 
     tabla = igra.tabla
     max_board_height = screen_height * 0.9
