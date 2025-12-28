@@ -1,22 +1,21 @@
-import math
-
+from enums.boje import Boje
 from src.models.igra import Igra
-import pygame
-from src.models.tabla import Tabla
 from src.gui.renderer import nacrtaj_tablu
 from src.gui.input import nadji_kliknuto_polje
+from math import sqrt
 import ctypes
 import platform
+import pygame
 
 if __name__ == "__main__":
-    # Postavljanje dpi awareness
+    # postavljanje dpi awareness
     if platform.system() == "Windows":
         try:
-            # Windows 8.1 i noviji
+            # 8.1 +
             ctypes.windll.shcore.SetProcessDpiAwareness(1)
         except:
             try:
-                # Windows Vista i noviji
+                # vista, 7, 8
                 ctypes.windll.user32.SetProcessDPIAware()
             except:
                 pass
@@ -27,16 +26,14 @@ if __name__ == "__main__":
     pygame.init()
 
     info = pygame.display.Info()
-    screen_width = int(info.current_w * 0.9)
+    screen_width = int(info.current_w * 0.7)
     screen_height = int(info.current_h * 0.80)
     screen = pygame.display.set_mode((screen_width, screen_height))
 
     tabla = igra.tabla
-    # HEX_SIZE = 30
-    # sirina polja = 2 * HEX_SIZE
-    # visina polja = sqrt(3) × HEX_SIZE
     max_board_height = screen_height * 0.9
-    HEX_SIZE = max_board_height / ((2 * tabla.n + 1) * math.sqrt(3))
+    sirina_polja = max_board_height / ((2 * tabla.n + 1) * sqrt(3))
+    visina_polja = sqrt(3) * sirina_polja
     running = True
     offset_x, offset_y = 0, 0
 
@@ -45,12 +42,12 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                kliknuto = nadji_kliknuto_polje(event.pos, tabla, HEX_SIZE, offset_x, offset_y)
+                kliknuto = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
                 if kliknuto:
                     print(f"Kliknuto: {kliknuto.slovo}{kliknuto.broj}")
 
-        screen.fill((30, 30, 40))
-        offset_x, offset_y = nacrtaj_tablu(screen, tabla, HEX_SIZE)
+        screen.fill(Boje.SIVA_POZADINA.value)
+        offset_x, offset_y = nacrtaj_tablu(screen, tabla, sirina_polja)
         pygame.display.flip()
 
     pygame.quit()

@@ -1,15 +1,58 @@
-from math import sqrt
-
 from src.gui.renderer import koordinate_polja
+from math import pi, sin, cos
 
-def nadji_kliknuto_polje(pos, tabla, size, offset_x, offset_y):
-    mx, my = pos
+def nadji_kliknuto_polje(clicked_position, tabla, size_x, size_y, offset_x, offset_y):
+    clicked_x, clicked_y = clicked_position
 
     for polje in tabla.raspored_polja:
-        x, y = koordinate_polja(polje, tabla, size, offset_x, offset_y)
+        x, y = koordinate_polja(polje, tabla, size_x, offset_x, offset_y)
+        vx = []
+        vy = []
+        angle = 0
+        while angle < 360:
+            rotirana_tacka = rotiraj_tacku(x - size_x, y, x, y, angle)
+            vx.append(rotirana_tacka[0])
+            vy.append(rotirana_tacka[1])
+            angle += 60
 
-        size_y = sqrt(3) * size / 2
-        if x - size < mx < x + size and y - size_y < my < y + size_y:
+        if tacka_u_poligonu(6, vx, vy, clicked_x, clicked_y):
             return polje
 
     return None
+
+# https://stackoverflow.com/a/2212851/30315841
+# adaptiran u python funkciju
+# shaut aut za dragog stranca
+def tacka_u_poligonu(nvert, vertx, verty, testx, testy):
+    i = j = c = False
+    j = nvert - 1
+    for i in range(0, nvert):
+        if( ( ( verty[i] > testy ) != ( verty[j] > testy ) ) and
+            ( testx < ( vertx[j] - vertx[i] ) * ( testy - verty[i] ) / ( verty[j] - verty[i] ) + vertx[i] ) ):
+            c = not c
+        j = i
+    return c
+
+# (xbase, ybase) je tacka oko koje se rotira tacka (x, y)
+# rotacija kontra kazaljki na satu :D
+def rotiraj_tacku(x, y, xbase, ybase, angle):
+    new_coord = transliraj_tacku(x, y, -xbase, -ybase)[0:2]
+    angle_rad = angle * pi / 180
+    rotmat = [[cos(angle_rad), sin(angle_rad)], [-sin(angle_rad),  cos(angle_rad)]]
+    rot_coord = [0, 0]
+
+    for i, row in enumerate(rotmat):
+        for j, p in enumerate(new_coord):
+            rot_coord[i] += p * row[j]
+
+    return transliraj_tacku(rot_coord[0], rot_coord[1], xbase, ybase)[0:2]
+
+# translira tacku (x, y) za (tx, ty)
+def transliraj_tacku(x, y, tx, ty):
+    point = [x, y, 1]
+    matrix = [[1, 0, tx], [0, 1, ty],[0, 0, 1]]
+    new_coord = [0, 0, 0]
+    for i, row in enumerate(matrix):
+        for j, p in enumerate(point):
+            new_coord[i] += p * row[j]
+    return new_coord
