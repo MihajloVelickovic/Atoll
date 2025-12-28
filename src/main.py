@@ -46,7 +46,11 @@ if __name__ == "__main__":
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 kliknuto = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
                 if kliknuto:
-                    #TODO: obradi klik (igranje poteza)
+                    if kliknuto.boja != Boje.BEZ_TAMNA:
+                        print(f"Na polju {kliknuto.slovo}{kliknuto.broj} vec stoji kamencic")
+                        continue
+                    kliknuto.boja = originalna_boja = Boje.BELA if igra.trenutni_potez else Boje.CRNA
+                    igra.trenutni_potez = not igra.trenutni_potez
                     print(f"Kliknuto: {kliknuto.slovo}{kliknuto.broj}")
             if event.type == pygame.MOUSEMOTION:
                 hover = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)

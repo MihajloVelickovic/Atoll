@@ -18,6 +18,7 @@ class Igra:
         self.cpu_partija = cpu_partija
         self.cpu_prvi = cpu_prvi
         self.beli_prvi = beli_prvi
+        self.trenutni_potez = beli_prvi
         self.__initialized = True
 
     @property

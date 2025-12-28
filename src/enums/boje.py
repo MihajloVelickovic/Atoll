@@ -9,3 +9,5 @@ class Boje(Enum):
     BEZ = (220, 200, 160)  # Bež boja
     BEZ_TAMNA = (200, 180, 140)  # Tamnija bež boja
 
+    def __eq__(self, other):
+        return self.value == other.value
