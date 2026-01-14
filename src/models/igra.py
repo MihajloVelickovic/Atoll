@@ -1,6 +1,7 @@
 from src.enums.boje import Boje
 from src.models.igrac import Igrac
 from src.models.tabla import Tabla
+from datetime import datetime
 
 class Igra:
 
@@ -15,6 +16,7 @@ class Igra:
         if hasattr(self, "__initialized"):
             return
         self.tabla = Tabla(n)
+        self.stanja = [self.tabla.bit_vector()]
         self.cpu_partija = cpu_partija
         self.cpu_prvi = cpu_prvi
         self.beli_prvi = beli_prvi
@@ -52,6 +54,11 @@ class Igra:
         return cls.__instanca
 
     @classmethod
+    def debug_konstrukcija(cls, n, tip_partije, cpu_prvi, beli_prvi):
+        cls.__instanca = Igra(n, tip_partije, cpu_prvi, beli_prvi )
+        return cls.__instanca
+
+    @classmethod
     def dekonstrukcija(cls):
         if cls.__instanca is not None:
             cls.__instanca = None
@@ -74,9 +81,28 @@ class Igra:
             print()
             n = int(input(poruka))
             if  2 < n or n < 1:
-                raise Exception("Morate uneti 0 (ne) ili 1 (da), pokusajte ponovo")
+                raise Exception("Morate uneti 1 ili 2, pokusajte ponovo")
             return bool(n-1)
         except Exception as ex:
             print(ex)
             return Igra.__unos_podataka_o_partiji(poruka)
 
+    def odigraj_potez(self, kliknuto, originalna_boja, idx):
+        if kliknuto:
+            if kliknuto.boja != Boje.BEZ_TAMNA:
+                print(f"Na polju {kliknuto.slovo}{kliknuto.broj} vec stoji kamencic")
+                return False, originalna_boja
+            kliknuto.boja = originalna_boja = Boje.BELA if self.trenutni_potez else Boje.CRNA
+            self.trenutni_potez = not self.trenutni_potez
+            print(f"Kliknuto: {kliknuto.slovo}{kliknuto.broj}")
+            self.stanja.append(self.stanja[-1].deep_copy())
+            self.stanja[-1][idx + 1] = 1
+            self.stanja[-1][0] ^= 1
+            print(self.stanja[-1])
+            return True, originalna_boja
+        return None, originalna_boja
+
+    def sacuvaj_izvestaj(self):
+        with open(f"logs/{str(datetime.now())}.log", "x") as file:
+            for stanje in self.stanja:
+                file.write(str(stanje) + "\n")

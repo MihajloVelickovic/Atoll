@@ -1,5 +1,4 @@
-from collections import deque
-from typing import List
+from BitVector import BitVector
 
 from models.ostrvo import Ostrvo
 from src.enums.boje import Boje
@@ -28,7 +27,12 @@ class Tabla:
             return None #todo raise
 
         if len(stripped) == 2:
-            return [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(stripped[1])][0]
+            polje = [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(stripped[1])][0]
+            index = self.__raspored_polja.index(polje)
+            for o in self.__ostrva:
+                if index in o.polja:
+                    return o
+            return polje
         else:
             if stripped.isdigit():
                 return [x for x in self.__raspored_polja if x.broj == int(stripped[0])]
@@ -44,8 +48,18 @@ class Tabla:
         return self.__raspored_polja
 
     @property
+    def ostrva(self):
+        return self.__ostrva
+
+    @property
     def n(self):
         return self.__n
+
+    def bit_vector(self):
+        vec = BitVector(bitlist = [1 if x.boja == Boje.CRNA or x.boja == Boje.BELA else 0 for x in self.__raspored_polja])
+        vec.pad_from_left(1)
+        return vec
+
 
     def __generisi_sva_polja(self):
         korak = 0

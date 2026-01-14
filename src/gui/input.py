@@ -5,7 +5,7 @@ from math import pi, sin, cos
 def nadji_kliknuto_polje(clicked_position, tabla, size_x, size_y, offset_x, offset_y):
     clicked_x, clicked_y = clicked_position
 
-    for polje in tabla.raspored_polja:
+    for idx, polje in enumerate(tabla.raspored_polja):
         x, y = koordinate_polja(polje, tabla, size_x, offset_x, offset_y)
         vx = []
         vy = []
@@ -17,9 +17,9 @@ def nadji_kliknuto_polje(clicked_position, tabla, size_x, size_y, offset_x, offs
             angle += 60
 
         if tacka_u_poligonu(6, vx, vy, clicked_x, clicked_y):
-            return polje
+            return polje, idx
 
-    return None
+    return None, None
 
 # https://stackoverflow.com/a/2212851/30315841
 # adaptiran u python funkciju

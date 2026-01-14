@@ -16,7 +16,7 @@ def koordinate_polja(polje, tabla, size, offset_x, offset_y):
     return x + offset_x, y + offset_y
 
 
-def nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y):
+def nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y, labele):
     # crta jedno heksagonalno polje (flattop orijentacija)
     q, r = tabla.koordinate_polja(polje)
     x, y = axial_to_pixel(q, r, size)
@@ -41,7 +41,7 @@ def nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y):
     pygame.draw.polygon(screen, (100, 90, 70), points, 2)
 
     # dodaj tekst SAMO za negranična polja
-    if not polje.granica:
+    if not polje.granica[0] and labele:
         font = pygame.font.Font(None, 18)
         label = f"{polje.slovo}{polje.broj}"
         text = font.render(label, True, (60, 60, 60))
@@ -181,7 +181,7 @@ def izracunaj_offset(tabla, size, screen_width, screen_height):
     return offset_x, offset_y
 
 
-def nacrtaj_tablu(screen, tabla, size=30):
+def nacrtaj_tablu(screen, tabla, size=30, labele=False):
     # crta celu tablu sa automatskim centriranjem
     screen_width = screen.get_width()
     screen_height = screen.get_height()
@@ -190,7 +190,7 @@ def nacrtaj_tablu(screen, tabla, size=30):
 
     # crtanje svih polja
     for polje in tabla.raspored_polja:
-        nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y)
+        nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y, labele)
 
     # crtanje labela van granicnih polja
     nacrtaj_labele(screen, tabla, size, offset_x, offset_y)

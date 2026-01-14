@@ -20,8 +20,11 @@ if __name__ == "__main__":
             except:
                 pass
 
-    igra = Igra.konstrukcija()
+    #igra = Igra.konstrukcija()
+    igra = Igra.debug_konstrukcija(5, False, False, False)
     igra.tabla.prikaz_polja()
+
+    #bv = igra.tabla.bit_vector()
 
     pygame.init()
 
@@ -39,22 +42,20 @@ if __name__ == "__main__":
     offset_x, offset_y = 0, 0
     prethodno_hover_polje = None
     originalna_boja = None
+    labele = True
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                kliknuto = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
-                if kliknuto:
-                    if kliknuto.boja != Boje.BEZ_TAMNA:
-                        print(f"Na polju {kliknuto.slovo}{kliknuto.broj} vec stoji kamencic")
+                    kliknuto, idx = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
+                    uspesno_odigrano, originalna_boja = igra.odigraj_potez(kliknuto, originalna_boja, idx)
+                    if not uspesno_odigrano:
                         continue
-                    kliknuto.boja = originalna_boja = Boje.BELA if igra.trenutni_potez else Boje.CRNA
-                    igra.trenutni_potez = not igra.trenutni_potez
-                    print(f"Kliknuto: {kliknuto.slovo}{kliknuto.broj}")
+
             if event.type == pygame.MOUSEMOTION:
-                hover = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
+                hover, idx = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
 
                 # ako se promenilo polje
                 if hover != prethodno_hover_polje:
@@ -65,7 +66,9 @@ if __name__ == "__main__":
                     prethodno_hover_polje = hover
 
         screen.fill(Boje.SIVA_POZADINA.value)
-        offset_x, offset_y = nacrtaj_tablu(screen, tabla, sirina_polja)
+        offset_x, offset_y = nacrtaj_tablu(screen, tabla, sirina_polja, labele)
         pygame.display.flip()
 
     pygame.quit()
+
+    igra.sacuvaj_izvestaj()
