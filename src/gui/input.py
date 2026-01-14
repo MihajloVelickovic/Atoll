@@ -60,7 +60,7 @@ def transliraj_tacku(x, y, tx, ty):
 
 # primenjuje hover efekat na polje i vraca originalnu boju
 def primeni_hover_efekat(polje):
-    if polje is None or polje.granica:
+    if polje is None or polje.granica[0]:
         return None
 
     originalna_boja = polje.boja

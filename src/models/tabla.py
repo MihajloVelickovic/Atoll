@@ -175,15 +175,14 @@ class Tabla:
                 o.susedi.remove(r)
 
     def prikaz_polja(self):
+        print("Polja:")
         for i in self.__raspored_polja:
             print(i.slovo, i.broj, i.boja, i.granica)
-        for i in self.__ostrva:
-            print(i.polja)
 
+        print("Ostrva + susedi:")
         for i in self.__ostrva:
             susedi = [self.__raspored_polja[x] for x in range(0, len(self.__raspored_polja)) if x in i.susedi]
-            print(susedi)
-
+            print(i.polja,": ", susedi)
 
     def __definisi_susedstva(self):
         for polje in self.__raspored_polja:
