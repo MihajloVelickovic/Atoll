@@ -17,7 +17,7 @@ class Tabla:
         self.__obrisi_nepostojece()
         self.__definisi_susedstva()
         self.__definisi_ostrva()
-        self.__ocisti_duplikate_ostrva()
+        self.__izbaci_polja_iz_suseda()
 
     def __getitem__(self, key):
         if type(key) != str:
@@ -159,17 +159,23 @@ class Tabla:
     def __definisi_ostrva(self):
         granice = self.granice()
         for granicar in granice:
+            # index ostrva gde se nalazi granicar
             index = granicar.granica[1]
-            self.__ostrva[index].polja.append(granicar)
+            # index granicara polja u rasporedu polja
+            i = self.__raspored_polja.index(granicar)
+            # dodavanje granicnih polja u korektno ostrvo
+            self.__ostrva[index].polja.append(i)
+            # dodavanje suseda ostrvskih polja u listu suseda
+            for s in self.__raspored_polja[i].susedi:
+                if s not in self.__ostrva[index].susedi:
+                    self.__ostrva[index].susedi.append(s)
 
-        for ostrvo in self.__ostrva:
-            ostrvo.generisi_susede()
-
-    def __ocisti_duplikate_ostrva(self):
+    # izbacivanje samih ostrvskih polja iz sopstvene liste suseda
+    def __izbaci_polja_iz_suseda(self):
         for o in self.__ostrva:
             removal_list = []
             for s in o.susedi:
-                if self.__raspored_polja[s] in o.polja:
+                if s in o.polja:
                     removal_list.append(s)
             for r in removal_list:
                 o.susedi.remove(r)
@@ -181,8 +187,9 @@ class Tabla:
 
         print("Ostrva + susedi:")
         for i in self.__ostrva:
+            polja = [self.__raspored_polja[x] for x in i.polja]
             susedi = [self.__raspored_polja[x] for x in range(0, len(self.__raspored_polja)) if x in i.susedi]
-            print(i.polja,": ", susedi)
+            print(polja,": ", susedi)
 
     def __definisi_susedstva(self):
         for polje in self.__raspored_polja:
