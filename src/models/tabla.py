@@ -1,3 +1,7 @@
+from collections import deque
+from typing import List
+
+from models.ostrvo import Ostrvo
 from src.enums.boje import Boje
 from src.models.polje import Polje
 
@@ -5,12 +9,35 @@ class Tabla:
     def __init__(self, n):
         self.__n = n
         self.__raspored_polja = []
+        self.__ostrva = [Ostrvo() for _ in range(12)]
         self.__generisi_tablu()
 
     def __generisi_tablu(self):
         self.__generisi_sva_polja()
         self.__obrisi_nepostojece()
         self.__definisi_susedstva()
+        self.__definisi_ostrva()
+        self.__ocisti_duplikate_ostrva()
+
+    def __getitem__(self, key):
+        if type(key) != str:
+            return None #todo raise
+
+        stripped = key.strip()
+        if len(stripped) > 2 or len(stripped) < 1:
+            return None #todo raise
+
+        if len(stripped) == 2:
+            return [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(stripped[1])][0]
+        else:
+            if stripped.isdigit():
+                return [x for x in self.__raspored_polja if x.broj == int(stripped[0])]
+            elif stripped.isalpha():
+                return [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize()]
+            return None
+
+    def granice(self):
+        return [x for x in self.__raspored_polja if x.granica[0] is True]
 
     @property #pretvara metodu u atribut
     def raspored_polja(self):
@@ -30,15 +57,18 @@ class Tabla:
             if i < self.__n:
                 # brojevi od 0 do potrebnog za kolonu
                 for j in range(0, self.__n + 1 + korak):
+                    ostrvo = None
                     # slovo Z, uvek granicno
                     if i == 0:
                         granica = True
                         # prva polovina redova (brojeva)
                         if j < (self.__n + 1)/2:
                             boja = Boje.CRNA
+                            ostrvo = 11
                         # druga polovina redova (brojeva)
                         else:
                             boja = Boje.BELA
+                            ostrvo = 10
 
                     # prvi prvcati red na tabli, onaj gde su
                     # vec postavljeni kamencici pre pocetka igre
@@ -47,17 +77,21 @@ class Tabla:
                         # prva polovina kolona (slova)
                         if i < (self.__n + 1) / 2:
                             boja = Boje.BELA
+                            ostrvo = 0
                         # druga polovina kolona (slova)
                         else:
                             boja = Boje.CRNA
+                            ostrvo = 1
 
                     # isti slucaj kao prosli if ali poslednji red
                     elif j == self.__n + korak:
                         granica = True
                         if i < (self.__n + 1) / 2:
                             boja = Boje.CRNA
+                            ostrvo = 9
                         else:
                             boja = Boje.BELA
+                            ostrvo = 8
 
                     # sva polja sa prve polovine table koja nisu krajnja
                     # to jest, sva slobodna polja kada igra pocne
@@ -65,40 +99,46 @@ class Tabla:
                         boja = Boje.BEZ
                         granica = False
 
-                    self.__raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, boja=boja))
+                    self.__raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, ostrvo=ostrvo, boja=boja))
                 korak += 1
 
             # sve isto kao prosli if, ali druga polovina table, kada opadaju redovi svakoj koloni
             else:
                 korak -= 1
                 for j in range(i - self.__n, 2 * self.__n + 1):
-
+                    ostrvo = None
                     if i == 2 * self.__n:
                         granica = True
                         if j < self.__n + (self.__n + 1)/2:
                             boja = Boje.BELA
+                            ostrvo = 4
                         else:
                             boja = Boje.CRNA
+                            ostrvo = 5
 
                     elif j == i - self.__n:
                         granica = True
                         if i < self.__n + (self.__n + 1) / 2:
                             boja = Boje.BELA
+                            ostrvo = 2
                         else:
                             boja = Boje.CRNA
+                            ostrvo = 3
 
                     elif j == 2 * self.__n:
                         granica = True
                         if i < self.__n + (self.__n + 1) / 2:
                             boja = Boje.CRNA
+                            ostrvo = 7
                         else:
                             boja = Boje.BELA
+                            ostrvo = 6
 
                     else:
                         boja = Boje.BEZ
                         granica = False
 
-                    self.__raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, boja=boja))
+                    self.__raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, ostrvo=ostrvo,boja=boja))
 
     def __obrisi_nepostojece(self):
         ids = []
@@ -116,9 +156,34 @@ class Tabla:
                 slovo = chr(ord('A') + ((ord('Z') - ord('A') + i) % 26))
                 self.__raspored_polja.remove(Polje(slovo=slovo, broj=j))
 
+    def __definisi_ostrva(self):
+        granice = self.granice()
+        for granicar in granice:
+            index = granicar.granica[1]
+            self.__ostrva[index].polja.append(granicar)
+
+        for ostrvo in self.__ostrva:
+            ostrvo.generisi_susede()
+
+    def __ocisti_duplikate_ostrva(self):
+        for o in self.__ostrva:
+            removal_list = []
+            for s in o.susedi:
+                if self.__raspored_polja[s] in o.polja:
+                    removal_list.append(s)
+            for r in removal_list:
+                o.susedi.remove(r)
+
     def prikaz_polja(self):
         for i in self.__raspored_polja:
             print(i.slovo, i.broj, i.boja, i.granica)
+        for i in self.__ostrva:
+            print(i.polja)
+
+        for i in self.__ostrva:
+            susedi = [self.__raspored_polja[x] for x in range(0, len(self.__raspored_polja)) if x in i.susedi]
+            print(susedi)
+
 
     def __definisi_susedstva(self):
         for polje in self.__raspored_polja:
@@ -151,3 +216,6 @@ class Tabla:
         r = row - col
 
         return q, r
+
+    def postoji_put(self, ostrvo1, ostrvo2):
+        return

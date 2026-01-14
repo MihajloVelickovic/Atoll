@@ -1,8 +1,8 @@
 class Polje:
-    def __init__(self, slovo, broj, granica=False, boja = None):
+    def __init__(self, slovo, broj, granica=False, ostrvo=None, boja = None):
         self.slovo = slovo
         self.broj = broj
-        self.granica = granica
+        self.granica = (granica, ostrvo)
         self.susedi = []
         self.boja = boja
 
@@ -11,3 +11,6 @@ class Polje:
             return False
         return (self.slovo == other.slovo and
                 self.broj == other.broj)
+
+    def __repr__(self):
+        return self.slovo+str(self.broj)
