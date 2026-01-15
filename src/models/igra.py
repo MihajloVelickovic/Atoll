@@ -20,6 +20,7 @@ class Igra:
         self.beli_prvi = beli_prvi
         self.stanja = [self.tabla.bit_vector(beli_prvi)]
         self.trenutni_potez = beli_prvi
+        self.kraj_igre = False
         self.__initialized = True
 
     @property
@@ -98,7 +99,9 @@ class Igra:
 
             self.novo_stanje(idx)
             self.tabla.provera_pobede(kliknuto)
-
+            if not self.ima_slobodnih_polja():
+                self.kraj_igre = True
+                return True, originalna_boja
             return True, originalna_boja
         return None, originalna_boja
 
@@ -112,3 +115,6 @@ class Igra:
         with open(f"logs/{str(datetime.now())}.log", "x") as file:
             for stanje in self.stanja:
                 file.write(str(stanje) + "\n")
+
+    def ima_slobodnih_polja(self):
+        return not self.stanja[-1][1:].count_bits() == self.stanja[-1][1:].length()

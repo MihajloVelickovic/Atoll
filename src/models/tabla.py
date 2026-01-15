@@ -1,6 +1,6 @@
 from collections import deque
 from BitVector import BitVector
-from models.ostrvo import Ostrvo
+from src.models.ostrvo import Ostrvo
 from src.enums.boje import Boje
 from src.models.polje import Polje
 

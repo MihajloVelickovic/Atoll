@@ -1,6 +1,6 @@
 from enums.boje import Boje
 from src.models.igra import Igra
-from src.gui.renderer import nacrtaj_tablu
+from src.gui.renderer import nacrtaj_tablu, prikazi_kraj
 from src.gui.input import nadji_kliknuto_polje, primeni_hover_efekat, ukloni_hover_efekat
 from math import sqrt
 import ctypes
@@ -21,7 +21,7 @@ if __name__ == "__main__":
                 pass
 
     #igra = Igra.konstrukcija()
-    igra = Igra.debug_konstrukcija(7, False, False, False)
+    igra = Igra.debug_konstrukcija(3, False, False, False)
     igra.tabla.prikaz_polja()
 
     bv = igra.tabla.bit_vector(igra.beli_prvi)
@@ -49,6 +49,7 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                if not igra.kraj_igre:
                     kliknuto, idx = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
                     uspesno_odigrano, originalna_boja = igra.odigraj_potez(kliknuto, originalna_boja, idx)
                     if not uspesno_odigrano:
@@ -67,7 +68,12 @@ if __name__ == "__main__":
 
         screen.fill(Boje.SIVA_POZADINA.value)
         offset_x, offset_y = nacrtaj_tablu(screen, tabla, sirina_polja, labele)
+
+        if igra.kraj_igre:
+            prikazi_kraj(screen)
+
         pygame.display.flip()
+
 
     pygame.quit()
 
