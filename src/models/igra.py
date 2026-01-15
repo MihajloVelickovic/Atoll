@@ -20,7 +20,7 @@ class Igra:
         self.beli_prvi = beli_prvi
         self.stanja = [self.tabla.bit_vector(beli_prvi)]
         self.trenutni_potez = beli_prvi
-        self.kraj_igre = False
+        self.kraj_igre = (False, False)
         self.__initialized = True
 
     @property
@@ -99,11 +99,11 @@ class Igra:
 
             self.novo_stanje(idx)
             if self.tabla.provera_pobede(kliknuto):
-                self.kraj_igre = True
-                return True, originalna_boja
+                self.kraj_igre = (True, True)
+                return True, kliknuto.boja
 
             if not self.ima_slobodnih_polja():
-                self.kraj_igre = True
+                self.kraj_igre = (True, False)
                 return True, originalna_boja
             return True, originalna_boja
         return None, originalna_boja

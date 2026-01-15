@@ -1,6 +1,7 @@
 from enums.boje import Boje
+from gui.renderer import prikazi_kraj_pobeda
 from src.models.igra import Igra
-from src.gui.renderer import nacrtaj_tablu, prikazi_kraj
+from src.gui.renderer import nacrtaj_tablu, prikazi_kraj_nema_slobodnih
 from src.gui.input import nadji_kliknuto_polje, primeni_hover_efekat, ukloni_hover_efekat
 from math import sqrt
 import ctypes
@@ -21,7 +22,7 @@ if __name__ == "__main__":
                 pass
 
     #igra = Igra.konstrukcija()
-    igra = Igra.debug_konstrukcija(5, False, False, False)
+    igra = Igra.debug_konstrukcija(3, False, False, False)
     igra.tabla.prikaz_polja()
 
     pygame.init()
@@ -41,13 +42,18 @@ if __name__ == "__main__":
     prethodno_hover_polje = None
     originalna_boja = None
     labele = True
+    listen = True
 
     while running:
         for event in pygame.event.get():
+
+            if event.type != pygame.QUIT and not listen:
+                continue
+
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                if not igra.kraj_igre:
+                if not igra.kraj_igre[0]:
                     kliknuto, idx = nadji_kliknuto_polje(event.pos, tabla, sirina_polja, visina_polja, offset_x, offset_y)
                     uspesno_odigrano, originalna_boja = igra.odigraj_potez(kliknuto, originalna_boja, idx)
                     if not uspesno_odigrano:
@@ -67,11 +73,13 @@ if __name__ == "__main__":
         screen.fill(Boje.SIVA_POZADINA.value)
         offset_x, offset_y = nacrtaj_tablu(screen, tabla, sirina_polja, labele)
 
-        if igra.kraj_igre:
-            prikazi_kraj(screen)
-
+        if igra.kraj_igre[0]:
+            listen = False
+            if igra.kraj_igre[1]:
+                prikazi_kraj_pobeda(screen, originalna_boja)
+            else:
+                prikazi_kraj_nema_slobodnih(screen)
         pygame.display.flip()
-
 
     pygame.quit()
 

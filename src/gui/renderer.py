@@ -1,6 +1,9 @@
 import pygame
 import math
 
+from enums.boje import Boje
+
+
 def axial_to_pixel(q, r, size):
     # konvertuje axial koordinate u pixel koordinate.
     # flattop orijentacija (ravna ivica gore/dole).
@@ -197,14 +200,26 @@ def nacrtaj_tablu(screen, tabla, size=30, labele=False):
 
     return offset_x, offset_y
 
-def prikazi_kraj(screen):
+def prikazi_kraj_nema_slobodnih(screen):
     overlay = pygame.Surface((screen.get_width(), screen.get_height()))
     overlay.set_alpha(180)
     overlay.fill((10, 10, 50))
     screen.blit(overlay, (0, 0))
 
-    font = pygame.font.Font(None, 100)
+    font = pygame.font.Font(None, 50)
     text_color = (255, 255, 100)
     text = font.render("Nema više slobodnih polja. Igra je završena.", True, text_color)
+    rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
+    screen.blit(text, rect)
+
+def prikazi_kraj_pobeda(screen, pobednik):
+    overlay = pygame.Surface((screen.get_width(), screen.get_height()))
+    overlay.set_alpha(180)
+    overlay.fill((10, 10, 50))
+    screen.blit(overlay, (0, 0))
+
+    font = pygame.font.Font(None, 50)
+    text_color = (255, 255, 100)
+    text = font.render(f"Kraj igre, {"Crni" if pobednik == Boje.CRNA else "Beli"} igrac je pobedio", True, text_color)
     rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
     screen.blit(text, rect)
