@@ -1,9 +1,6 @@
 import pygame
 import math
 
-from pygame.examples.sprite_texture import renderer
-
-
 def axial_to_pixel(q, r, size):
     # konvertuje axial koordinate u pixel koordinate.
     # flattop orijentacija (ravna ivica gore/dole).

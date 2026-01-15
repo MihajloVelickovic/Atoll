@@ -1,12 +1,13 @@
 from collections import deque
 from BitVector import BitVector
-from src.models.ostrvo import Ostrvo
+from models.ostrvo import Ostrvo
 from src.enums.boje import Boje
 from src.models.polje import Polje
 
 class Tabla:
     def __init__(self, n):
         self.__n = n
+        self.__uslov_pobede = 7 # broj ostrva / 2, broj ostrva je uvek 12
         self.__raspored_polja = []
         self.__ostrva = [Ostrvo() for _ in range(12)]
         self.__generisi_tablu()
@@ -40,6 +41,7 @@ class Tabla:
                 return [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize()]
             return None
 
+    # vraca sva granicna polja table
     def granice(self):
         return [x for x in self.__raspored_polja if x.granica[0] is True]
 
@@ -47,6 +49,7 @@ class Tabla:
     def raspored_polja(self):
         return self.__raspored_polja
 
+    # getter za ostrva table
     @property
     def ostrva(self):
         return self.__ostrva
@@ -238,19 +241,22 @@ class Tabla:
 
         return q, r
 
-    def povezi_ostrva(self, susedi, boja):
+    # Postavlja o.povezano na true ako je kliknuto polje koje za suseda ima
+    # polje koje pripada ostrvu iste boje kao potez koji je odigran
+    def __povezi_ostrva(self, susedi, boja):
         looping = True
         for s in susedi:
             for o in self.__ostrva:
                 if s in o.polja and o.povezano == False and boja == o.boja:
                     o.povezano = True
-                    print([self.__raspored_polja[x] for x in o.polja])
+                    #print([self.__raspored_polja[x] for x in o.polja])
                     looping = False
                     break
             if not looping:
                 break
 
-    def postoji_put(self, o1: Ostrvo, o2: Ostrvo):
+    # True / False da li postoji put izmedju dva ostrva
+    def __postoji_put(self, o1: Ostrvo, o2: Ostrvo):
         if not o1.povezano or not o2.povezano or o1.boja != o2.boja:
             return False
 
@@ -275,7 +281,17 @@ class Tabla:
 
         return False
 
-    def proveri_puteve(self, boja):
+    '''
+    funkcija formira listu listi boolova
+    svaki bool predstavlja postojanje puta izmedju ostrva
+    prva lista je prvo ostrvo te boje, druga drugo itd
+    svaki element listi je bool koji predstavlja da li je ostrvo povezano sa 
+    tim ostrvom za koje posmatramo bool
+    primer: lista na polju [2] u skup_svih_puteva, za belu boju, je
+    ostrvo sa indeksom [4] na listi ostrva, i moze da bude povezano sa ostrvima [0, 2, 6, 8 i 10]
+    True / False u toj listi na polju sa indeksom [4] su onda redom da li je ostrvo povezano sa tim ostrvima
+    '''
+    def __proveri_puteve(self, boja):
         ostrva_date_boje = [idx for idx, x in enumerate(self.__ostrva) if x.boja == boja]
         skup_svih_puteva = []
         for i in range(0, len(ostrva_date_boje)):
@@ -285,17 +301,98 @@ class Tabla:
                 if i == j:
                     continue
                 index2 = ostrva_date_boje[j]
-                postoji = self.postoji_put(self.__ostrva[index1], self.__ostrva[index2])
+                postoji = self.__postoji_put(self.__ostrva[index1], self.__ostrva[index2])
                 putevi_po_ostrvu.append(postoji)
             skup_svih_puteva.append(putevi_po_ostrvu)
-        print(skup_svih_puteva)
+        #print(skup_svih_puteva)
         return skup_svih_puteva
 
-    def pobeda(self, putevi):
-        return False #todo
 
+    '''
+    funkcija koja na osnovu boje igraca koji je odigrao potez
+    i skupa svih postojecih puteva medju ostrvima
+    odredjuje da li je igrac ispunio uslov pobede
+    '''
+    def __pobeda(self, svi_putevi, boja):
+
+        # lista duzina obodnih puteva svih povezanih ostrva date boje
+        lista_duzina_obodnih_puteva = []
+        # prolaz kroz True / False liste postojanja puteva izmedju ostrva
+        for i, putevi in enumerate(svi_putevi):
+
+            # indeks trenutnog ostrva na listi svih ostrva (self.__ostrva)
+            index_i = i * 2 + 1 if boja == Boje.CRNA else i * 2
+
+            # svi indeski, i indeksi koji dolaze u obzir
+            # prilikom provere duzine puta u smeru kazaljke na satu
+            indeksi_clockwise_potrebni = [i % 12 for i in range(index_i + 2, index_i + 12, 2)]
+            indeksi_clockwise_svi = [i % 12 for i in range(index_i, index_i + 12)]
+
+            # svi indeski, i indeksi koji dolaze u obzir
+            # prilikom provere duzine puta u smeru suprotnom kretanju kazaljke na satu
+            indeksi_counter_clockwise_potrebni = [i % 12 for i in range(index_i - 2, index_i - 12, -2)]
+            indeksi_counter_clockwise_svi = [i % 12 for i in range(index_i, index_i - 12,-1)]
+
+            # pomocne liste gde se dodaju sve duzine za dato ostrvo
+            # iz njih ce se izvuci maksimalna
+            temp_lista_cw = []
+            temp_lista_ccw = []
+
+            # ove dve liste su iste duzine, pa je sve jedno
+            # kroz koju ce da se iterise
+            for j in range(0, len(indeksi_clockwise_potrebni)):
+
+                # indeksi (na listi svih ostrva) ostrva za koje trenutno proveravamo da li
+                # su povezana sa ostrvom 'i' (spoljasnja petlja)
+                # u oba smera
+                index_cw = indeksi_clockwise_potrebni[j]
+                index_ccw = indeksi_counter_clockwise_potrebni[j]
+
+                # indeksi (na True / False listi postojanja puteva)
+                # ostrva za koje trenutno proveravamo da li su povezana sa ostrvom 'i'
+                # u oba smera
+                index_ostrva_cw = (index_cw // 2 - (1 if index_cw > index_i else 0))
+                index_ostrva_ccw = (index_ccw // 2 - (1 if index_ccw > index_i else 0))
+
+                # ako je ostrvo povezano ->
+                if putevi[index_ostrva_cw]:
+                    # pozicije na listi svih ostrva u smeru kazaljke na satu
+                    # koristi se za dobijanje duzine obodnog puta
+                    pozicija_trenutnog = indeksi_clockwise_svi.index(index_i)
+                    pozicija_trazenog = indeksi_clockwise_svi.index(index_cw)
+                    duzina_obodnog_puta_cw = pozicija_trazenog - pozicija_trenutnog + 1
+                    temp_lista_cw.append(duzina_obodnog_puta_cw)
+
+                if putevi[index_ostrva_ccw]:
+                    # pozicije na listi svih ostrva u smeru suprotnom kretanju kazaljke na satu
+                    # koristi se za dobijanje duzine obodnog puta
+                    pozicija_trenutnog = indeksi_counter_clockwise_svi.index(index_i)
+                    pozicija_trazenog = indeksi_counter_clockwise_svi.index(index_ccw)
+                    duzina_obodnog_puta_ccw = pozicija_trazenog - pozicija_trenutnog + 1
+                    temp_lista_ccw.append(duzina_obodnog_puta_ccw)
+
+            # ako su pomocna lista prazna nema sta da se dodaje
+            if temp_lista_cw:
+                lista_duzina_obodnih_puteva.append(max(temp_lista_cw))
+            if temp_lista_ccw:
+                lista_duzina_obodnih_puteva.append(max(temp_lista_ccw))
+
+        # uslov pobede je da je minimalna duzina bilo kog obodnog puta
+        # >= (broj_ostrva / 2) + 1
+        if lista_duzina_obodnih_puteva and min(lista_duzina_obodnih_puteva) >= self.__uslov_pobede:
+            return True
+
+        return False
+
+    '''
+    mozda nije najbolje ime
+    ali funkcija je tablin deo odigravanja poteza
+    znaci povezivanje ostrva ako je kliknuto polje susedno ostrvu,
+    provera postojanja puteva izmedju ostrva te boje
+    i provera da li je neki od tih puteva pobednicki
+    '''
     def provera_pobede(self, kliknuto_polje):
-        self.povezi_ostrva(kliknuto_polje.susedi, kliknuto_polje.boja)
-        putevi = self.proveri_puteve(kliknuto_polje.boja)
-        return self.pobeda(putevi)
+        self.__povezi_ostrva(kliknuto_polje.susedi, kliknuto_polje.boja)
+        putevi = self.__proveri_puteve(kliknuto_polje.boja)
+        return self.__pobeda(putevi, kliknuto_polje.boja)
 

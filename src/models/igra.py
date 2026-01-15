@@ -98,7 +98,10 @@ class Igra:
             print(f"Kliknuto: {kliknuto.slovo}{kliknuto.broj}")
 
             self.novo_stanje(idx)
-            self.tabla.provera_pobede(kliknuto)
+            if self.tabla.provera_pobede(kliknuto):
+                self.kraj_igre = True
+                return True, originalna_boja
+
             if not self.ima_slobodnih_polja():
                 self.kraj_igre = True
                 return True, originalna_boja
