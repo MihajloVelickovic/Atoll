@@ -1,5 +1,4 @@
 from src.enums.boje import Boje
-from src.models.igrac import Igrac
 from src.models.tabla import Tabla
 from datetime import datetime
 
@@ -16,10 +15,10 @@ class Igra:
         if hasattr(self, "__initialized"):
             return
         self.tabla = Tabla(n)
-        self.stanja = [self.tabla.bit_vector()]
         self.cpu_partija = cpu_partija
         self.cpu_prvi = cpu_prvi
         self.beli_prvi = beli_prvi
+        self.stanja = [self.tabla.bit_vector(beli_prvi)]
         self.trenutni_potez = beli_prvi
         self.__initialized = True
 
@@ -92,15 +91,22 @@ class Igra:
             if kliknuto.boja != Boje.BEZ_TAMNA:
                 print(f"Na polju {kliknuto.slovo}{kliknuto.broj} vec stoji kamencic")
                 return False, originalna_boja
+
             kliknuto.boja = originalna_boja = Boje.BELA if self.trenutni_potez else Boje.CRNA
             self.trenutni_potez = not self.trenutni_potez
             print(f"Kliknuto: {kliknuto.slovo}{kliknuto.broj}")
-            self.stanja.append(self.stanja[-1].deep_copy())
-            self.stanja[-1][idx + 1] = 1
-            self.stanja[-1][0] ^= 1
-            print(self.stanja[-1])
+
+            self.novo_stanje(idx)
+            self.tabla.provera_pobede(kliknuto)
+
             return True, originalna_boja
         return None, originalna_boja
+
+    def novo_stanje(self, idx):
+        self.stanja.append(self.stanja[-1].deep_copy())
+        self.stanja[-1][idx + 1] = 1
+        self.stanja[-1][0] ^= 1
+        print(self.stanja[-1])
 
     def sacuvaj_izvestaj(self):
         with open(f"logs/{str(datetime.now())}.log", "x") as file:

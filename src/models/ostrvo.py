@@ -3,3 +3,4 @@ class Ostrvo:
         self.polja = []
         self.boja = None
         self.susedi = []
+        self.povezano = False

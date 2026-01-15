@@ -21,11 +21,11 @@ if __name__ == "__main__":
                 pass
 
     #igra = Igra.konstrukcija()
-    igra = Igra.debug_konstrukcija(5, False, False, False)
+    igra = Igra.debug_konstrukcija(7, False, False, False)
     igra.tabla.prikaz_polja()
 
-    #bv = igra.tabla.bit_vector()
-
+    bv = igra.tabla.bit_vector(igra.beli_prvi)
+    print(bv)
     pygame.init()
 
     info = pygame.display.Info()
@@ -71,4 +71,6 @@ if __name__ == "__main__":
 
     pygame.quit()
 
+    b = igra.postoji_put(igra.tabla.ostrva[0],igra.tabla.ostrva[2])
+    print(b)
     igra.sacuvaj_izvestaj()

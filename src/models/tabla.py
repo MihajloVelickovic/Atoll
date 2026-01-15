@@ -1,5 +1,5 @@
+from collections import deque
 from BitVector import BitVector
-
 from models.ostrvo import Ostrvo
 from src.enums.boje import Boje
 from src.models.polje import Polje
@@ -55,11 +55,11 @@ class Tabla:
     def n(self):
         return self.__n
 
-    def bit_vector(self):
+    def bit_vector(self, pairity):
         vec = BitVector(bitlist = [1 if x.boja == Boje.CRNA or x.boja == Boje.BELA else 0 for x in self.__raspored_polja])
         vec.pad_from_left(1)
+        vec[0] = pairity
         return vec
-
 
     def __generisi_sva_polja(self):
         korak = 0
@@ -179,6 +179,7 @@ class Tabla:
             i = self.__raspored_polja.index(granicar)
             # dodavanje granicnih polja u korektno ostrvo
             self.__ostrva[index].polja.append(i)
+            self.__ostrva[index].boja = self.__raspored_polja[i].boja
             # dodavanje suseda ostrvskih polja u listu suseda
             for s in self.__raspored_polja[i].susedi:
                 if s not in self.__ostrva[index].susedi:
@@ -237,5 +238,64 @@ class Tabla:
 
         return q, r
 
-    def postoji_put(self, ostrvo1, ostrvo2):
-        return
+    def povezi_ostrva(self, susedi, boja):
+        looping = True
+        for s in susedi:
+            for o in self.__ostrva:
+                if s in o.polja and o.povezano == False and boja == o.boja:
+                    o.povezano = True
+                    print([self.__raspored_polja[x] for x in o.polja])
+                    looping = False
+                    break
+            if not looping:
+                break
+
+    def postoji_put(self, o1: Ostrvo, o2: Ostrvo):
+        if not o1.povezano or not o2.povezano or o1.boja != o2.boja:
+            return False
+
+        queue = deque()
+        visited = []
+        queue.extend(o1.susedi)
+        while queue:
+            susjed_index = queue.popleft()
+
+            if susjed_index in visited:
+                continue
+            visited.append(susjed_index)
+
+            susjed = self.__raspored_polja[susjed_index]
+            if susjed.boja != o1.boja:
+                continue
+
+            if susjed_index in o2.polja:
+                return True
+
+            queue.extend(susjed.susedi)
+
+        return False
+
+    def proveri_puteve(self, boja):
+        ostrva_date_boje = [idx for idx, x in enumerate(self.__ostrva) if x.boja == boja]
+        skup_svih_puteva = []
+        for i in range(0, len(ostrva_date_boje)):
+            putevi_po_ostrvu = []
+            index1 = ostrva_date_boje[i]
+            for j in range(0, len(ostrva_date_boje)):
+                if i == j:
+                    continue
+                index2 = ostrva_date_boje[j]
+                postoji = self.postoji_put(self.__ostrva[index1], self.__ostrva[index2])
+                putevi_po_ostrvu.append(postoji)
+            skup_svih_puteva.append(putevi_po_ostrvu)
+        print(skup_svih_puteva)
+        return skup_svih_puteva
+
+    def pobeda(self, putevi):
+        return False #todo
+
+    def provera_pobede(self, kliknuto_polje):
+        self.povezi_ostrva(kliknuto_polje.susedi, kliknuto_polje.boja)
+        putevi = self.proveri_puteve(kliknuto_polje.boja)
+        return self.pobeda(putevi)
+
