@@ -83,4 +83,4 @@ if __name__ == "__main__":
 
     pygame.quit()
 
-    igra.sacuvaj_izvestaj()
+    igra.sacuvaj_izvestaj(igra.kraj_igre)

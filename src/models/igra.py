@@ -114,7 +114,7 @@ class Igra:
         self.stanja[-1][idx + 1] = 1
         self.stanja[-1][0] ^= 1
 
-    def sacuvaj_izvestaj(self):
+    def sacuvaj_izvestaj(self, kraj_igre):
         file_name = f"logs/{str(datetime.now())}.log"
         print(f"Izvestaj igre sacuvan u: {file_name}")
         with open(file_name, "x") as file:
@@ -123,13 +123,25 @@ class Igra:
             prethodno = None
             for stanje in self.stanja:
                 if prethodno is not None:
+                    # stanja se uvek razlikuju za 1 bit, kog xorovanje izvlaci
                     promena = stanje[1:] ^ prethodno[1:]
+                    # fja vraca poziciju prvog postavljenog bita, a ima samo 1 nakon xora
                     index = promena.next_set_bit()
+                    # (index u bitvektoru) + 1 je jednak indeksu polja u tabla.__raspored_polja
+                    # - 1 nije potrebno jer je prvi bit iskljucen iz xorovanja
                     potez = str(self.tabla.raspored_polja[index])
                     potez = f"{"C: " if ko_je_igrao == 0 else "B: "}" + potez
                 file.write(str(stanje) + "\t" + potez + "\n")
+                # prvi bit predstavlja igraca
                 ko_je_igrao = stanje[0]
                 prethodno = stanje
 
+            poslednja_linija = ("IGRA_PREKINUTA" if not kraj_igre[0] else
+                                f"{"CRNI" if ko_je_igrao == 1 else "BELI"}_POBEDIO" if kraj_igre[1] else
+                                "NEMA_SLOBODNIH_POLJA")
+            file.write(poslednja_linija)
+
     def ima_slobodnih_polja(self):
+        # count_bits vraca broj postavljenih bitova, ako ih ima isto koliko ima bitova
+        # ukupno onda nema slobodnih polja
         return not self.stanja[-1][1:].count_bits() == self.stanja[-1][1:].length()
