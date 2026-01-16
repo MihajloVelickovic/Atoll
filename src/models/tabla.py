@@ -9,6 +9,7 @@ class Tabla:
         self.__n = n
         self.__uslov_pobede = 7 # broj ostrva / 2, broj ostrva je uvek 12
         self.__raspored_polja = []
+        self.__putevi = [[[False for _ in range(5)] for _ in range(6)] for _ in range(2)]
         self.__ostrva = [Ostrvo() for _ in range(12)]
         self.__generisi_tablu()
 
@@ -249,14 +250,13 @@ class Tabla:
             for o in self.__ostrva:
                 if s in o.polja and o.povezano == False and boja == o.boja:
                     o.povezano = True
-                    #print([self.__raspored_polja[x] for x in o.polja])
                     looping = False
                     break
             if not looping:
                 break
 
     # True / False da li postoji put izmedju dva ostrva
-    def __postoji_put(self, o1: Ostrvo, o2: Ostrvo):
+    def __postoji_put(self, o1: Ostrvo, o2: Ostrvo, stampaj):
         if not o1.povezano or not o2.povezano or o1.boja != o2.boja:
             return False
 
@@ -275,6 +275,10 @@ class Tabla:
                 continue
 
             if susjed_index in o2.polja:
+                if stampaj:
+                    print(f"{"C:" if o1.boja == Boje.CRNA else "B:"} "
+                          f"{[self.__raspored_polja[x] for x in o1.polja]} "
+                          f"<--> {[self.__raspored_polja[x] for x in o2.polja]}")
                 return True
 
             queue.extend(susjed.susedi)
@@ -300,11 +304,18 @@ class Tabla:
             for j in range(0, len(ostrva_date_boje)):
                 if i == j:
                     continue
+                putevi_index = 0 if boja == Boje.CRNA else 1
+                # bool za stampanje u konzolu novih puteva
+                # todo optimizacija
+                stampaj_put = not self.__putevi[putevi_index][i][j-1]
                 index2 = ostrva_date_boje[j]
-                postoji = self.__postoji_put(self.__ostrva[index1], self.__ostrva[index2])
+                try:
+                    postoji = True if skup_svih_puteva[j][i-1%5] else self.__postoji_put(self.__ostrva[index1], self.__ostrva[index2], stampaj_put)
+                except IndexError:
+                    postoji = self.__postoji_put(self.__ostrva[index1], self.__ostrva[index2], stampaj_put)
+
                 putevi_po_ostrvu.append(postoji)
             skup_svih_puteva.append(putevi_po_ostrvu)
-        #print(skup_svih_puteva)
         return skup_svih_puteva
 
 
@@ -313,7 +324,7 @@ class Tabla:
     i skupa svih postojecih puteva medju ostrvima
     odredjuje da li je igrac ispunio uslov pobede
     '''
-    def __pobeda(self, svi_putevi, boja):
+    def __pobeda(self, svi_putevi, boja, stampaj):
 
         # lista duzina obodnih puteva svih povezanih ostrva date boje
         lista_duzina_obodnih_puteva = []
@@ -372,10 +383,12 @@ class Tabla:
                     temp_lista_ccw.append(duzina_obodnog_puta_ccw)
 
             # ako su pomocna lista prazna nema sta da se dodaje
-            if temp_lista_cw:
+            if temp_lista_cw and temp_lista_ccw:
                 lista_duzina_obodnih_puteva.append(max(temp_lista_cw))
-            if temp_lista_ccw:
                 lista_duzina_obodnih_puteva.append(max(temp_lista_ccw))
+                if stampaj:
+                    print(f"{"C: " if boja == Boje.CRNA else "B: "}{[self.__raspored_polja[x] for x in self.__ostrva[index_i].polja]} "
+                          f"CW: {lista_duzina_obodnih_puteva[-2]} CCW: {lista_duzina_obodnih_puteva[-1]}")
 
         # uslov pobede je da je minimalna duzina bilo kog obodnog puta
         # >= (broj_ostrva / 2) + 1
@@ -394,5 +407,16 @@ class Tabla:
     def provera_pobede(self, kliknuto_polje):
         self.__povezi_ostrva(kliknuto_polje.susedi, kliknuto_polje.boja)
         putevi = self.__proveri_puteve(kliknuto_polje.boja)
-        return self.__pobeda(putevi, kliknuto_polje.boja)
+        stampaj_duzine_obodnih_puteva = self.__novi_put(putevi, kliknuto_polje.boja)
+        return self.__pobeda(putevi, kliknuto_polje.boja, stampaj_duzine_obodnih_puteva)
 
+    # funkcija vraca true ako je povezan novi put
+    # naznacava da treba da se odstamapju duzine obodnih puteva
+    # todo optimizacija
+    def __novi_put(self, putevi, boja):
+        index = 0 if boja == Boje.CRNA else 1
+        if not self.__putevi[index] or sorted(self.__putevi[index]) != sorted(putevi):
+            self.__putevi[index] = putevi
+            return True
+        else:
+            return False
