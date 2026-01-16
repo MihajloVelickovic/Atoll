@@ -115,7 +115,7 @@ class Igra:
         self.stanja[-1][0] ^= 1
 
     def sacuvaj_izvestaj(self, kraj_igre):
-        file_name = f"logs/{str(datetime.now())}.log"
+        file_name = f"src/logs/{str(datetime.now())}.log"
         print(f"Izvestaj igre sacuvan u: {file_name}")
         with open(file_name, "x") as file:
             file.write("IZVESTAJ\n")

@@ -1,5 +1,5 @@
-from enums.boje import Boje
-from gui.renderer import prikazi_kraj_pobeda
+from src.enums.boje import Boje
+from src.gui.renderer import prikazi_kraj_pobeda
 from src.models.igra import Igra
 from src.gui.renderer import nacrtaj_tablu, prikazi_kraj_nema_slobodnih
 from src.gui.input import nadji_kliknuto_polje, primeni_hover_efekat, ukloni_hover_efekat

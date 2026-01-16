@@ -1,7 +1,7 @@
 import pygame
 import math
 
-from enums.boje import Boje
+from src.enums.boje import Boje
 
 
 def axial_to_pixel(q, r, size):
