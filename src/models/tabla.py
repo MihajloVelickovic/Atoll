@@ -1,6 +1,6 @@
 from collections import deque
 from BitVector import BitVector
-from models.ostrvo import Ostrvo
+from src.models.ostrvo import Ostrvo
 from src.enums.boje import Boje
 from src.models.polje import Polje
 
@@ -13,23 +13,20 @@ class Tabla:
         self.__ostrva = [Ostrvo() for _ in range(12)]
         self.__generisi_tablu()
 
-    def __generisi_tablu(self):
-        self.__generisi_sva_polja()
-        self.__obrisi_nepostojece()
-        self.__definisi_susedstva()
-        self.__definisi_ostrva()
-        self.__izbaci_polja_iz_suseda()
+    #region Pomocne funkcije, getteri, overrideovi
 
+    # override za []
     def __getitem__(self, key):
         if type(key) != str:
-            return None #todo raise
+            return None  # todo raise
 
         stripped = key.strip()
         if len(stripped) > 2 or len(stripped) < 1:
-            return None #todo raise
+            return None  # todo raise
 
         if len(stripped) == 2:
-            polje = [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(stripped[1])][0]
+            polje = \
+            [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(stripped[1])][0]
             index = self.__raspored_polja.index(polje)
             for o in self.__ostrva:
                 if index in o.polja:
@@ -41,10 +38,6 @@ class Tabla:
             elif stripped.isalpha():
                 return [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize()]
             return None
-
-    # vraca sva granicna polja table
-    def granice(self):
-        return [x for x in self.__raspored_polja if x.granica[0] is True]
 
     @property #pretvara metodu u atribut
     def raspored_polja(self):
@@ -59,11 +52,52 @@ class Tabla:
     def n(self):
         return self.__n
 
+    # Prikazuje informacije o tabli nakon generisanja
+    def prikaz_polja(self):
+        print("Polja:")
+        for i in self.__raspored_polja:
+            print(i.slovo, i.broj, i.boja, i.granica)
+
+        print("Ostrva + susedi:")
+        for i in self.__ostrva:
+            polja = [self.__raspored_polja[x] for x in i.polja]
+            susedi = [self.__raspored_polja[x] for x in range(0, len(self.__raspored_polja)) if x in i.susedi]
+            print(polja,": ", susedi)
+
+    def koordinate_polja(self, polje):
+        # Slovo -> col
+        if polje.slovo == 'Z':
+            col = 0
+        else:
+            col = ord(polje.slovo) - ord('A') + 1
+
+        row = polje.broj
+
+        q = col - self.__n
+        r = row - col
+
+        return q, r
+
     def bit_vector(self, pairity):
-        vec = BitVector(bitlist = [1 if x.boja == Boje.CRNA or x.boja == Boje.BELA else 0 for x in self.__raspored_polja])
+        vec = BitVector(bitlist=[1 if x.boja == Boje.CRNA or x.boja == Boje.BELA else 0 for x in self.__raspored_polja])
         vec.pad_from_left(1)
         vec[0] = pairity
         return vec
+
+    # vraca sva granicna polja table
+    def granice(self):
+        return [x for x in self.__raspored_polja if x.granica[0] is True]
+
+    #endregion
+
+    #region Generisanje table
+
+    def __generisi_tablu(self):
+        self.__generisi_sva_polja()
+        self.__obrisi_nepostojece()
+        self.__definisi_susedstva()
+        self.__definisi_ostrva()
+        self.__izbaci_polja_iz_suseda()
 
     def __generisi_sva_polja(self):
         korak = 0
@@ -199,17 +233,6 @@ class Tabla:
             for r in removal_list:
                 o.susedi.remove(r)
 
-    def prikaz_polja(self):
-        print("Polja:")
-        for i in self.__raspored_polja:
-            print(i.slovo, i.broj, i.boja, i.granica)
-
-        print("Ostrva + susedi:")
-        for i in self.__ostrva:
-            polja = [self.__raspored_polja[x] for x in i.polja]
-            susedi = [self.__raspored_polja[x] for x in range(0, len(self.__raspored_polja)) if x in i.susedi]
-            print(polja,": ", susedi)
-
     def __definisi_susedstva(self):
         for polje in self.__raspored_polja:
             for i in range(-1, 2):
@@ -228,19 +251,21 @@ class Tabla:
                     if sused in self.__raspored_polja and sused != polje:
                         polje.susedi.append(self.__raspored_polja.index(sused))
 
-    def koordinate_polja(self, polje):
-        # Slovo -> col
-        if polje.slovo == 'Z':
-            col = 0
-        else:
-            col = ord(polje.slovo) - ord('A') + 1
+    #endregion
 
-        row = polje.broj
-
-        q = col - self.__n
-        r = row - col
-
-        return q, r
+    #region Provera pobede
+    '''
+    mozda nije najbolje ime
+    ali funkcija je tablin deo odigravanja poteza
+    znaci povezivanje ostrva ako je kliknuto polje susedno ostrvu,
+    provera postojanja puteva izmedju ostrva te boje
+    i provera da li je neki od tih puteva pobednicki
+    '''
+    def provera_pobede(self, kliknuto_polje):
+        self.__povezi_ostrva(kliknuto_polje.susedi, kliknuto_polje.boja)
+        putevi = self.__proveri_puteve(kliknuto_polje.boja)
+        novi_put = self.__novi_put(putevi, kliknuto_polje.boja)
+        return self.__pobeda(putevi, kliknuto_polje.boja, novi_put)
 
     # Postavlja o.povezano na true ako je kliknuto polje koje za suseda ima
     # polje koje pripada ostrvu iste boje kao potez koji je odigran
@@ -319,6 +344,16 @@ class Tabla:
             skup_svih_puteva.append(putevi_po_ostrvu)
         return skup_svih_puteva
 
+    # funkcija vraca true ako je povezan novi put
+    # naznacava da treba da se odstamapju duzine obodnih puteva
+    # todo optimizacija
+    def __novi_put(self, putevi, boja):
+        index = 0 if boja == Boje.CRNA else 1
+        if not self.__putevi[index] or sorted(self.__putevi[index]) != sorted(putevi):
+            self.__putevi[index] = putevi
+            return True
+        else:
+            return False
 
     '''
     funkcija koja na osnovu boje igraca koji je odigrao potez
@@ -422,26 +457,4 @@ class Tabla:
 
         return False
 
-    '''
-    mozda nije najbolje ime
-    ali funkcija je tablin deo odigravanja poteza
-    znaci povezivanje ostrva ako je kliknuto polje susedno ostrvu,
-    provera postojanja puteva izmedju ostrva te boje
-    i provera da li je neki od tih puteva pobednicki
-    '''
-    def provera_pobede(self, kliknuto_polje):
-        self.__povezi_ostrva(kliknuto_polje.susedi, kliknuto_polje.boja)
-        putevi = self.__proveri_puteve(kliknuto_polje.boja)
-        novi_put = self.__novi_put(putevi, kliknuto_polje.boja)
-        return self.__pobeda(putevi, kliknuto_polje.boja, novi_put)
-
-    # funkcija vraca true ako je povezan novi put
-    # naznacava da treba da se odstamapju duzine obodnih puteva
-    # todo optimizacija
-    def __novi_put(self, putevi, boja):
-        index = 0 if boja == Boje.CRNA else 1
-        if not self.__putevi[index] or sorted(self.__putevi[index]) != sorted(putevi):
-            self.__putevi[index] = putevi
-            return True
-        else:
-            return False
+    #endregion
