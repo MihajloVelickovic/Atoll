@@ -90,15 +90,16 @@ class Igra:
     def odigraj_potez(self, kliknuto, originalna_boja, idx):
         if kliknuto:
             if kliknuto.boja != Boje.BEZ_TAMNA:
-                print(f"Na polju {kliknuto.slovo}{kliknuto.broj} vec stoji kamencic")
+                print(f"Na polju {kliknuto.slovo}{kliknuto.broj} vec stoji {"Beli" if kliknuto.boja == Boje.BELA else "Crni"} kamencic")
                 return False, originalna_boja
 
             kliknuto.boja = originalna_boja = Boje.BELA if self.trenutni_potez else Boje.CRNA
             self.trenutni_potez = not self.trenutni_potez
-            print(f"Kliknuto: {kliknuto.slovo}{kliknuto.broj}")
+            print(f"{"C: " if kliknuto.boja == Boje.CRNA else "B: "}{kliknuto.slovo}{kliknuto.broj}")
 
             self.novo_stanje(idx)
             if self.tabla.provera_pobede(kliknuto):
+                print(f"{"C:" if kliknuto.boja == Boje.CRNA else "B:" } Pobeda")
                 self.kraj_igre = (True, True)
                 return True, kliknuto.boja
 
@@ -112,12 +113,23 @@ class Igra:
         self.stanja.append(self.stanja[-1].deep_copy())
         self.stanja[-1][idx + 1] = 1
         self.stanja[-1][0] ^= 1
-        print(self.stanja[-1])
 
     def sacuvaj_izvestaj(self):
-        with open(f"logs/{str(datetime.now())}.log", "x") as file:
+        file_name = f"logs/{str(datetime.now())}.log"
+        print(f"Izvestaj igre sacuvan u: {file_name}")
+        with open(file_name, "x") as file:
+            file.write("IZVESTAJ\n")
+            potez = " POCETNO_STANJE"
+            prethodno = None
             for stanje in self.stanja:
-                file.write(str(stanje) + "\n")
+                if prethodno is not None:
+                    promena = stanje[1:] ^ prethodno[1:]
+                    index = promena.next_set_bit()
+                    potez = str(self.tabla.raspored_polja[index])
+                    potez = f"{"C: " if ko_je_igrao == 0 else "B: "}" + potez
+                file.write(str(stanje) + "\t" + potez + "\n")
+                ko_je_igrao = stanje[0]
+                prethodno = stanje
 
     def ima_slobodnih_polja(self):
         return not self.stanja[-1][1:].count_bits() == self.stanja[-1][1:].length()
