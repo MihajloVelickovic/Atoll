@@ -119,7 +119,7 @@ class Igra:
         print(f"Izvestaj igre sacuvan u: {file_name}")
         with open(file_name, "x") as file:
             file.write("IZVESTAJ\n")
-            potez = " POCETNO_STANJE"
+            potez = "POCETNO_STANJE"
             prethodno = None
             for stanje in self.stanja:
                 if prethodno is not None:

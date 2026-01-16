@@ -310,7 +310,8 @@ class Tabla:
                 stampaj_put = not self.__putevi[putevi_index][i][j-1]
                 index2 = ostrva_date_boje[j]
                 try:
-                    postoji = True if skup_svih_puteva[j][i-1%5] else self.__postoji_put(self.__ostrva[index1], self.__ostrva[index2], stampaj_put)
+                    postoji = (True if skup_svih_puteva[j][(i - 1) % 5] else
+                               self.__postoji_put(self.__ostrva[index1], self.__ostrva[index2], stampaj_put))
                 except IndexError:
                     postoji = self.__postoji_put(self.__ostrva[index1], self.__ostrva[index2], stampaj_put)
 
@@ -324,10 +325,18 @@ class Tabla:
     i skupa svih postojecih puteva medju ostrvima
     odredjuje da li je igrac ispunio uslov pobede
     '''
-    def __pobeda(self, svi_putevi, boja, stampaj):
+    def __pobeda(self, svi_putevi, boja, novi_put):
+        if not novi_put:
+            return False
 
-        # lista duzina obodnih puteva svih povezanih ostrva date boje
-        lista_duzina_obodnih_puteva = []
+        # lista listi duzina obodnih puteva
+        # funkcionise na principu disjunktnosti,
+        # ako je ostrvo 0 povezano sa ostrvima 1 i 2
+        # sve duzine obodnih puteva ce biti na indeksu 0 ove liste
+        # dovoljno je da min element jedne od ovih listi ispuni uslov pobede
+        # da zasigurno znamo da je igrac pobedio
+        lista_duzina_obodnih_puteva = [[] for _ in range(6)]
+
         # prolaz kroz True / False liste postojanja puteva izmedju ostrva
         for i, putevi in enumerate(svi_putevi):
 
@@ -349,6 +358,11 @@ class Tabla:
             temp_lista_cw = []
             temp_lista_ccw = []
 
+            # index liste u listi lista disjunktno povezanih ostrva ( :| )
+            # u for petlji ispod se trazi najmanji indeks nekog ostrva povezanog
+            # sa ostrvom j
+            index_postojece_disjunktne_liste = index_i
+
             # ove dve liste su iste duzine, pa je sve jedno
             # kroz koju ce da se iterise
             for j in range(0, len(indeksi_clockwise_potrebni)):
@@ -367,6 +381,8 @@ class Tabla:
 
                 # ako je ostrvo povezano ->
                 if putevi[index_ostrva_cw]:
+                    if index_cw < index_postojece_disjunktne_liste:
+                        index_postojece_disjunktne_liste = index_cw
                     # pozicije na listi svih ostrva u smeru kazaljke na satu
                     # koristi se za dobijanje duzine obodnog puta
                     pozicija_trenutnog = indeksi_clockwise_svi.index(index_i)
@@ -375,6 +391,8 @@ class Tabla:
                     temp_lista_cw.append(duzina_obodnog_puta_cw)
 
                 if putevi[index_ostrva_ccw]:
+                    if index_ccw < index_postojece_disjunktne_liste:
+                        index_postojece_disjunktne_liste = index_ccw
                     # pozicije na listi svih ostrva u smeru suprotnom kretanju kazaljke na satu
                     # koristi se za dobijanje duzine obodnog puta
                     pozicija_trenutnog = indeksi_counter_clockwise_svi.index(index_i)
@@ -382,18 +400,25 @@ class Tabla:
                     duzina_obodnog_puta_ccw = pozicija_trazenog - pozicija_trenutnog + 1
                     temp_lista_ccw.append(duzina_obodnog_puta_ccw)
 
-            # ako su pomocna lista prazna nema sta da se dodaje
+            # ako su pomocne liste prazne nema sta da se dodaje
             if temp_lista_cw and temp_lista_ccw:
-                lista_duzina_obodnih_puteva.append(max(temp_lista_cw))
-                lista_duzina_obodnih_puteva.append(max(temp_lista_ccw))
-                if stampaj:
-                    print(f"{"C: " if boja == Boje.CRNA else "B: "}{[self.__raspored_polja[x] for x in self.__ostrva[index_i].polja]} "
-                          f"CW: {lista_duzina_obodnih_puteva[-2]} CCW: {lista_duzina_obodnih_puteva[-1]}")
+                # najmanji pronadjen indeks ostrva se pretvara u indeks za T/F listu
+                # (lista listi disjunktno povezanih ostrva je iste strukture)
+                index_postojece_disjunktne_liste = (index_postojece_disjunktne_liste // 2 -
+                                                   (1 if index_postojece_disjunktne_liste > index_i else 0))
+                lista_duzina_obodnih_puteva[index_postojece_disjunktne_liste].append(max(temp_lista_cw))
+                lista_duzina_obodnih_puteva[index_postojece_disjunktne_liste].append(max(temp_lista_ccw))
+                if novi_put:
+                    print(f"{"C: " if boja == Boje.CRNA else "B: "}"
+                          f"{[self.__raspored_polja[x] for x in self.__ostrva[index_i].polja]} "
+                          f"CW: {lista_duzina_obodnih_puteva[index_postojece_disjunktne_liste][-2]} "
+                          f"CCW: {lista_duzina_obodnih_puteva[index_postojece_disjunktne_liste][-1]}")
 
         # uslov pobede je da je minimalna duzina bilo kog obodnog puta
         # >= (broj_ostrva / 2) + 1
-        if lista_duzina_obodnih_puteva and min(lista_duzina_obodnih_puteva) >= self.__uslov_pobede:
-            return True
+        for disjunktna_lista in lista_duzina_obodnih_puteva:
+            if disjunktna_lista and min(disjunktna_lista) >= self.__uslov_pobede:
+                return True
 
         return False
 
@@ -407,8 +432,8 @@ class Tabla:
     def provera_pobede(self, kliknuto_polje):
         self.__povezi_ostrva(kliknuto_polje.susedi, kliknuto_polje.boja)
         putevi = self.__proveri_puteve(kliknuto_polje.boja)
-        stampaj_duzine_obodnih_puteva = self.__novi_put(putevi, kliknuto_polje.boja)
-        return self.__pobeda(putevi, kliknuto_polje.boja, stampaj_duzine_obodnih_puteva)
+        novi_put = self.__novi_put(putevi, kliknuto_polje.boja)
+        return self.__pobeda(putevi, kliknuto_polje.boja, novi_put)
 
     # funkcija vraca true ako je povezan novi put
     # naznacava da treba da se odstamapju duzine obodnih puteva
