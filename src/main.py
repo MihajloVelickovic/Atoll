@@ -22,7 +22,7 @@ if __name__ == "__main__":
                 pass
 
     #igra = Igra.konstrukcija()
-    igra = Igra.debug_konstrukcija(3, False, False, True)
+    igra = Igra.debug_konstrukcija(5, False, False, True)
     #igra.tabla.prikaz_polja()
 
     pygame.init()

@@ -208,7 +208,7 @@ def prikazi_kraj_nema_slobodnih(screen):
 
     font = pygame.font.Font(None, 50)
     text_color = (255, 255, 100)
-    text = font.render("Nema više slobodnih polja. Igra je završena.", True, text_color)
+    text = font.render("Kraj igre. Nema više slobodnih polja.", True, text_color)
     rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
     screen.blit(text, rect)
 
@@ -220,6 +220,6 @@ def prikazi_kraj_pobeda(screen, pobednik):
 
     font = pygame.font.Font(None, 50)
     text_color = (255, 255, 100)
-    text = font.render(f"Kraj igre, {"Crni" if pobednik == Boje.CRNA else "Beli"} igrac je pobedio", True, text_color)
+    text = font.render(f"Kraj igre. {"Crni" if pobednik == Boje.CRNA else "Beli"} igrač je pobedio.", True, text_color)
     rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
     screen.blit(text, rect)
