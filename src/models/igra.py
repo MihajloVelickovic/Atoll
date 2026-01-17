@@ -87,6 +87,25 @@ class Igra:
             print(ex)
             return Igra.__unos_podataka_o_partiji(poruka)
 
+    def svi_moguci_potezi(self,stanje=None):
+        if stanje is None:
+            stanje = self.stanja[-1]
+        return [i for i,x in enumerate(stanje[1:]) if x==0]
+
+    def sva_moguca_stanja(self,stanje=None):
+        if stanje is None:
+            stanje = self.stanja[-1]
+
+        potezi = self.svi_moguci_potezi(stanje)
+        sva_moguca_stanja = []
+        for potez in potezi:
+            novo_stanje = stanje.deep_copy()
+            novo_stanje[0] ^= 1
+            novo_stanje[potez+1]=1
+            sva_moguca_stanja.append(novo_stanje)
+
+        return sva_moguca_stanja
+
     def odigraj_potez(self, kliknuto, originalna_boja, idx):
         if kliknuto:
             if kliknuto.boja != Boje.BEZ_TAMNA:
@@ -110,7 +129,8 @@ class Igra:
         return None, originalna_boja
 
     def novo_stanje(self, idx):
-        self.stanja.append(self.stanja[-1].deep_copy())
+        if self.stanja[-1][idx + 1] == 1:
+            return
         self.stanja[-1][idx + 1] = 1
         self.stanja[-1][0] ^= 1
 
