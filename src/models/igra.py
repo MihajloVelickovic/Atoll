@@ -131,6 +131,7 @@ class Igra:
     def novo_stanje(self, idx):
         if self.stanja[-1][idx + 1] == 1:
             return
+        self.stanja.append(self.stanja[-1].deep_copy())
         self.stanja[-1][idx + 1] = 1
         self.stanja[-1][0] ^= 1
 
