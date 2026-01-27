@@ -1,4 +1,5 @@
 from src.enums.boje import Boje
+from src.models.ai import AI
 from src.models.tabla import Tabla
 from datetime import datetime
 
@@ -17,10 +18,14 @@ class Igra:
         self.tabla = Tabla(n)
         self.cpu_partija = cpu_partija
         self.cpu_prvi = cpu_prvi
+        if cpu_partija:
+            self.ai = AI()
+        else:
+            self.ai = None
         self.beli_prvi = beli_prvi
         self.stanja = [self.tabla.bit_vector(beli_prvi)]
         self.trenutni_potez = beli_prvi
-        self.kraj_igre = (False, False)
+        self.kraj_igre = (False, False) # (zavrsena_igra, zavrsena_pobedom)
         self.__initialized = True
 
     @property
@@ -166,3 +171,4 @@ class Igra:
         # count_bits vraca broj postavljenih bitova, ako ih ima isto koliko ima bitova
         # ukupno onda nema slobodnih polja
         return not self.stanja[-1][1:].count_bits() == self.stanja[-1][1:].length()
+        return polje.boja

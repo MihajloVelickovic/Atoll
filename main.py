@@ -21,8 +21,8 @@ if __name__ == "__main__":
             except:
                 pass
 
-    #igra = Igra.konstrukcija()
-    igra = Igra.debug_konstrukcija(5, False, False, True)
+    igra = Igra.konstrukcija()
+    # igra = Igra.debug_konstrukcija(5, False, False, True)
     #igra.tabla.prikaz_polja()
 
     pygame.init()
