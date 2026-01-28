@@ -18,10 +18,6 @@ class Igra:
         self.tabla = Tabla(n)
         self.cpu_partija = cpu_partija
         self.cpu_prvi = cpu_prvi
-        if cpu_partija:
-            self.ai = AI()
-        else:
-            self.ai = None
         self.beli_prvi = beli_prvi
         self.stanja = [self.tabla.bit_vector(beli_prvi)]
         self.trenutni_potez = beli_prvi
@@ -97,6 +93,17 @@ class Igra:
             stanje = self.stanja[-1]
         return [i for i,x in enumerate(stanje[1:]) if x==0]
 
+    def ai_na_potezu(self):
+        if not self.cpu_partija:
+            return False
+        cpu_je_beli = self.cpu_prvi == self.beli_prvi
+        return self.trenutni_potez == cpu_je_beli
+
+    def ai_najbolji_potez(self):
+        if not self.cpu_partija:
+            return None
+        return AI.najbolji_potez(self)
+
     def sva_moguca_stanja(self,stanje=None):
         if stanje is None:
             stanje = self.stanja[-1]
@@ -113,7 +120,7 @@ class Igra:
 
     def odigraj_potez(self, kliknuto, originalna_boja, idx):
         if kliknuto:
-            if kliknuto.boja != Boje.BEZ_TAMNA:
+            if kliknuto.boja not in (Boje.BEZ, Boje.BEZ_TAMNA):
                 print(f"Na polju {kliknuto.slovo}{kliknuto.broj} vec stoji {"Beli" if kliknuto.boja == Boje.BELA else "Crni"} kamencic")
                 return False, originalna_boja
 

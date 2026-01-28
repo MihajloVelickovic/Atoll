@@ -1,13 +1,18 @@
 class AI:
 
-    def __init__(self):
+    @staticmethod
+    def minimax(stanje, dubina, alpha, beta, maksimizuje):
         pass
 
-    def minimax(self):
+    @staticmethod
+    def heuristika(stanje):
         pass
 
-    def heuristika(self):
-        pass
-
-    def najbolji_potez(self):
-        pass
+    @staticmethod
+    def najbolji_potez(igra):
+        # TODO: implementirati minimax
+        # za sada vraca prvi slobodan potez
+        moguci_potezi = igra.svi_moguci_potezi()
+        if moguci_potezi:
+            return moguci_potezi[1]
+        return None
