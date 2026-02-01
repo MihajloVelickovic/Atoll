@@ -71,9 +71,10 @@ def primeni_hover_efekat(polje):
     elif polje.boja == Boje.BELA:
         polje.boja = Boje.SVETLOSIVA
 
+    # print(f"orig. boja {originalna_boja} primenjena boja:{polje.boja}") #debug
     return originalna_boja
 
-# Vraca originalnu boju polja
+# vraca originalnu boju polja
 def ukloni_hover_efekat(polje, originalna_boja):
     if polje is not None and originalna_boja is not None:
         polje.boja = originalna_boja

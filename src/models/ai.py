@@ -14,5 +14,5 @@ class AI:
         # za sada vraca prvi slobodan potez
         moguci_potezi = igra.svi_moguci_potezi()
         if moguci_potezi:
-            return moguci_potezi[1]
+            return moguci_potezi[0]
         return None

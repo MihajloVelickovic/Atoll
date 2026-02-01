@@ -1,3 +1,5 @@
+import time
+
 from src.enums.boje import Boje
 from src.gui.renderer import prikazi_kraj_pobeda
 from src.models.igra import Igra
@@ -60,6 +62,7 @@ def obradi_hover(event_pos, tabla, gui: GUIState):
     hover, idx = nadji_kliknuto_polje(event_pos, tabla, gui.sirina_polja, gui.visina_polja, gui.offset_x, gui.offset_y)
 
     if hover != gui.prethodno_hover_polje:
+        # print(f"HOVER: {hover}, ORIG.BOJA:{gui.originalna_boja}") #debug
         ukloni_hover_efekat(gui.prethodno_hover_polje, gui.originalna_boja)
         gui.originalna_boja = primeni_hover_efekat(hover)
         gui.prethodno_hover_polje = hover
@@ -69,8 +72,7 @@ def odigraj_ai_potez(igra, gui: GUIState):
     idx = igra.ai_najbolji_potez()
     if idx is not None:
         polje = igra.tabla.raspored_polja[idx]
-        _, gui.originalna_boja = igra.odigraj_potez(polje, gui.originalna_boja, idx)
-
+        _, _ = igra.odigraj_potez(polje, gui.originalna_boja, idx)
 
 if __name__ == "__main__":
     setup_dpi_awareness()
@@ -95,6 +97,8 @@ if __name__ == "__main__":
         # AI potez (pre event handling-a jer AI moze prvi da igra)
         if igra.cpu_partija and not igra.kraj_igre[0] and igra.ai_na_potezu():
             odigraj_ai_potez(igra, gui)
+            time.sleep(0.5)
+            continue
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -105,7 +109,8 @@ if __name__ == "__main__":
                 continue
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                obradi_klik(igra, event.pos, gui)
+                if not igra.ai_na_potezu():
+                    obradi_klik(igra, event.pos, gui)
 
             elif event.type == pygame.MOUSEMOTION:
                 obradi_hover(event.pos, igra.tabla, gui)
