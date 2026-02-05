@@ -98,7 +98,9 @@ class Igra:
         if not self.cpu_partija:
             return None
         # return next(i for i, x in enumerate(self.stanja[-1][1:]) if x == 0)
-        najbolje_stanje = AI.minimax(self.stanja[-1], 5, True)
+        najbolje_stanje = AI.minimax(self.stanja[-1], 3, True)
+        potez = najbolje_stanje[0][1:] ^ self.stanja[-1][1:]
+        return potez.next_set_bit()
 
     def odigraj_potez(self, kliknuto, originalna_boja, idx):
         if kliknuto:

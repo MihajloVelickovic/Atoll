@@ -2,39 +2,49 @@ from random import randrange
 class AI:
 
     @staticmethod
-    def minimax(stanje, dubina, maksimizuje, alpha=(None, float("-inf")), beta=(None, float("inf"))):
+    def minimax(stanje, dubina, maksimizuje, alpha=float("-inf"), beta=float("inf")):
+
+        sva_sledeca_stanja = AI.sva_moguca_stanja(stanje)
+        sva_sledeca_stanja = sva_sledeca_stanja[0:5]
+
+        if dubina == 0 or not sva_sledeca_stanja:
+            return stanje, AI.heuristika(stanje)
+
+        najbolje_stanje = stanje
         if maksimizuje:
-            return AI.max_f(stanje, dubina, alpha, beta)
+            max_vrednost = float("-inf")
+            for sledece_stanje in sva_sledeca_stanja:
+                vrednost = AI.minimax(sledece_stanje, dubina-1, not maksimizuje, alpha, beta)
+
+                if vrednost[1] > max_vrednost:
+                    max_vrednost = vrednost[1]
+                    najbolje_stanje = sledece_stanje
+
+                alpha = max(alpha, vrednost[1])
+                if beta <= alpha:
+                    break
+            return najbolje_stanje, max_vrednost
+
         else:
-            return AI.min_f(stanje, dubina, alpha, beta)
+            min_vrednost = float("inf")
+
+            for sledece_stanje in sva_sledeca_stanja:
+                vrednost = AI.minimax(sledece_stanje, dubina-1, not maksimizuje, alpha, beta)
+
+                if vrednost[1] < min_vrednost:
+                    min_vrednost = vrednost[1]
+                    najbolje_stanje = sledece_stanje
+
+                beta = min(beta, vrednost[1])
+                if alpha >= beta:
+                    break
+
+            return najbolje_stanje, min_vrednost
 
     @staticmethod
     def heuristika(stanje):
+        #TODO: uraditi pravu heuristiku lmao
         return randrange(1,10)
-
-    @staticmethod
-    def max_f(stanje, dubina, alpha, beta):
-        nova_stanja = AI.sva_moguca_stanja(stanje)
-        if dubina == 0 or not nova_stanja:
-            return stanje, AI.heuristika(stanje)
-        else:
-            for s in nova_stanja:
-                alpha = max(alpha, AI.min_f(s, dubina-1, alpha, beta), key=lambda x: x[1])
-                if alpha >= beta:
-                    return beta
-        return alpha
-
-    @staticmethod
-    def min_f(stanje, dubina, alpha, beta):
-        nova_stanja = AI.sva_moguca_stanja(stanje)
-        if dubina == 0 or not nova_stanja:
-            return stanje, AI.heuristika(stanje)
-        else:
-            for s in nova_stanja:
-                alpha = min(alpha, AI.max_f(s, dubina - 1, alpha, beta), key=lambda x: x[0])
-                if beta <= alpha:
-                    return alpha
-        return beta
 
     @staticmethod
     def svi_moguci_potezi(stanje):
