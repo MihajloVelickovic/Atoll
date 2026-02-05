@@ -5,7 +5,6 @@ class AI:
     def minimax(stanje, dubina, maksimizuje, alpha=float("-inf"), beta=float("inf")):
 
         sva_sledeca_stanja = AI.sva_moguca_stanja(stanje)
-        sva_sledeca_stanja = sva_sledeca_stanja[0:5]
 
         if dubina == 0 or not sva_sledeca_stanja:
             return stanje, AI.heuristika(stanje)

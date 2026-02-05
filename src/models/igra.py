@@ -110,11 +110,11 @@ class Igra:
 
             kliknuto.boja = originalna_boja = Boje.BELA if self.trenutni_potez else Boje.CRNA
             self.trenutni_potez = not self.trenutni_potez
-            print(f"{"C: " if kliknuto.boja == Boje.CRNA else "B: "}{kliknuto.slovo}{kliknuto.broj}")
+            print(f"{"(CPU) " if not self.ai_na_potezu() else ""}{"C: " if kliknuto.boja == Boje.CRNA else "B: "}{kliknuto.slovo}{kliknuto.broj}")
 
             self.novo_stanje(idx)
             if self.tabla.provera_pobede(kliknuto):
-                print(f"{"C:" if kliknuto.boja == Boje.CRNA else "B:" } Pobeda")
+                print(f"{"(CPU) " if not self.ai_na_potezu() else ""}{"C:" if kliknuto.boja == Boje.CRNA else "B:" } Pobeda")
                 self.kraj_igre = (True, True)
                 return True, kliknuto.boja
 
