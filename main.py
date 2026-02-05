@@ -77,8 +77,8 @@ def odigraj_ai_potez(igra, gui: GUIState):
 if __name__ == "__main__":
     setup_dpi_awareness()
 
-    igra = Igra.konstrukcija()
-    # igra = Igra.debug_konstrukcija(5, False, False, True)
+    #igra = Igra.konstrukcija()
+    igra = Igra.debug_konstrukcija(5, True, False, True)
 
     screen, screen_width, screen_height = init_pygame()
     sirina, visina = izracunaj_dimenzije_polja(screen_height, igra.tabla.n)
