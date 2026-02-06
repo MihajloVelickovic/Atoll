@@ -93,7 +93,6 @@ class Igra:
     def cpu_najbolji_potez(self):
         if not self.cpu_partija:
             return None
-        # return next(i for i, x in enumerate(self.stanja[-1][1:]) if x == 0)
         najbolje_stanje = Cpu.minimax(self.stanja[-1], 3, True)
         potez = najbolje_stanje[0][1:] ^ self.stanja[-1][1:]
         return potez.next_set_bit()
@@ -145,7 +144,8 @@ class Igra:
         self.stanja[-1][0] ^= 1
 
     def sacuvaj_izvestaj(self, kraj_igre):
-        file_name = f"src/logs/{str(datetime.now())}.log"
+        vreme_string = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        file_name = f"src/logs/{vreme_string}.log"
         print(f"Izvestaj igre sacuvan u: {file_name}")
         with open(file_name, "x") as file:
             file.write("IZVESTAJ\n")
@@ -175,4 +175,3 @@ class Igra:
         # count_bits vraca broj postavljenih bitova, ako ih ima isto koliko ima bitova
         # ukupno onda nema slobodnih polja
         return not self.stanja[-1][1:].count_bits() == self.stanja[-1][1:].length()
-        return polje.boja

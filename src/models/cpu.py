@@ -67,10 +67,4 @@ class Cpu:
         if debug:
             return randrange(1,10)
 
-        #TODO: uraditi pravu heuristiku lmao
-
-
-
-
-        return None
 

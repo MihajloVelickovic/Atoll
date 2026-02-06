@@ -13,6 +13,7 @@ if __name__ == "__main__":
 
     #igra = Igra.konstrukcija()
     igra = Igra.debug_konstrukcija(3, True, True, True)
+    # igra = Igra.debug_konstrukcija(3, False, False, True)
 
     gui.init_pygame()
     gui.izracunaj_dimenzije_polja(igra.tabla.n)
@@ -40,6 +41,11 @@ if __name__ == "__main__":
 
                 if igra.kraj_igre[0]:
                     continue
+
+                if event.type == pygame.KEYUP:
+                    if event.key == pygame.K_q or pygame.K_ESCAPE:
+                        running = False
+                        continue
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if not igra.cpu_na_potezu():
