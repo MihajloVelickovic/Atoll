@@ -52,6 +52,23 @@ class Tabla:
     def n(self):
         return self.__n
 
+    @staticmethod
+    def svi_moguci_potezi(stanje):
+        return [i for i, x in enumerate(stanje[1:]) if x == 0]
+
+    @staticmethod
+    def sva_moguca_stanja(stanje):
+        potezi = Tabla.svi_moguci_potezi(stanje)
+        sva_moguca_stanja = []
+        for potez in potezi:
+            novo_stanje = stanje.deep_copy()
+            novo_stanje[0] ^= 1
+            novo_stanje[potez + 1] = 1
+            sva_moguca_stanja.append(novo_stanje)
+
+        return sva_moguca_stanja
+
+
     # Prikazuje informacije o tabli nakon generisanja
     def prikaz_polja(self):
         print("Polja:")

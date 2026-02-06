@@ -1,5 +1,5 @@
 from src.enums.boje import Boje
-from src.models.ai import AI
+from src.models.cpu import Cpu
 from src.models.tabla import Tabla
 from datetime import datetime
 
@@ -46,10 +46,6 @@ class Igra:
         beli_prvi = Igra.__unos_podataka_o_partiji("Odaberite prvog igraca:\n1. Crni\n2. Beli\n")
 
         beli_cpu = tip_partije and ((beli_prvi and cpu_prvi) or (not beli_prvi and not cpu_prvi))
-        crni_cpu = tip_partije and not beli_cpu
-
-        # p1 = Igrac(Boje.BELA, beli_cpu, beli_prvi)
-        # p2 = Igrac(Boje.CRNA, crni_cpu, not beli_prvi)
 
         cls.__instanca = Igra(n, tip_partije, cpu_prvi, beli_prvi)
         return cls.__instanca
@@ -88,17 +84,17 @@ class Igra:
             print(ex)
             return Igra.__unos_podataka_o_partiji(poruka)
 
-    def ai_na_potezu(self):
+    def cpu_na_potezu(self):
         if not self.cpu_partija:
             return False
         cpu_je_beli = self.cpu_prvi == self.beli_prvi
         return self.trenutni_potez == cpu_je_beli
 
-    def ai_najbolji_potez(self):
+    def cpu_najbolji_potez(self):
         if not self.cpu_partija:
             return None
         # return next(i for i, x in enumerate(self.stanja[-1][1:]) if x == 0)
-        najbolje_stanje = AI.minimax(self.stanja[-1], 3, True)
+        najbolje_stanje = Cpu.minimax(self.stanja[-1], 3, True)
         potez = najbolje_stanje[0][1:] ^ self.stanja[-1][1:]
         return potez.next_set_bit()
 
@@ -110,11 +106,11 @@ class Igra:
 
             kliknuto.boja = originalna_boja = Boje.BELA if self.trenutni_potez else Boje.CRNA
             self.trenutni_potez = not self.trenutni_potez
-            print(f"{"(CPU) " if not self.ai_na_potezu() else ""}{"C: " if kliknuto.boja == Boje.CRNA else "B: "}{kliknuto.slovo}{kliknuto.broj}")
+            print(f"{"(CPU) " if not self.cpu_na_potezu() else ""}{"C: " if kliknuto.boja == Boje.CRNA else "B: "}{kliknuto.slovo}{kliknuto.broj}")
 
             self.novo_stanje(idx)
             if self.tabla.provera_pobede(kliknuto):
-                print(f"{"(CPU) " if not self.ai_na_potezu() else ""}{"C:" if kliknuto.boja == Boje.CRNA else "B:" } Pobeda")
+                print(f"{"(CPU) " if not self.cpu_na_potezu() else ""}{"C:" if kliknuto.boja == Boje.CRNA else "B:" } Pobeda")
                 self.kraj_igre = (True, True)
                 return True, kliknuto.boja
 

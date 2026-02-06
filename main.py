@@ -10,7 +10,7 @@ from math import sqrt
 import ctypes
 import platform
 import pygame
-
+from src.gui.renderer import koordinate_polja
 # cuva gui podatke o tabli
 @dataclass
 class GUIState:
@@ -58,21 +58,36 @@ def obradi_klik(igra, event_pos, gui: GUIState):
     _, gui.originalna_boja = igra.odigraj_potez(kliknuto, gui.originalna_boja, idx)
 
 
+def hover_logika(polje, gui):
+    ukloni_hover_efekat(gui.prethodno_hover_polje, gui.originalna_boja)
+    gui.originalna_boja = primeni_hover_efekat(polje)
+    gui.prethodno_hover_polje = polje
+
 def obradi_hover(event_pos, tabla, gui: GUIState):
     hover, idx = nadji_kliknuto_polje(event_pos, tabla, gui.sirina_polja, gui.visina_polja, gui.offset_x, gui.offset_y)
 
     if hover != gui.prethodno_hover_polje:
         # print(f"HOVER: {hover}, ORIG.BOJA:{gui.originalna_boja}") #debug
-        ukloni_hover_efekat(gui.prethodno_hover_polje, gui.originalna_boja)
-        gui.originalna_boja = primeni_hover_efekat(hover)
-        gui.prethodno_hover_polje = hover
+        hover_logika(hover, gui)
 
 
 def odigraj_ai_potez(igra, gui: GUIState):
-    idx = igra.ai_najbolji_potez()
+    idx = igra.cpu_najbolji_potez()
+    polje = igra.tabla.raspored_polja[idx]
+
+    # nadam se temp fix ali videcemo....
+    # problem je bio sto nakon odigranog poteza,
+    # kada se mis pomeri s polja koje je kliknuto,
+    # nakon cpu poteza bi se i ono obojilo u boju cpu igraca
+    # to se desavalo zbog elegantno nepismenog nacina cuvanja i obrade
+    # boja za razlicite dogadjaje u igri
+    # ovaj fix u sustini simulira obradu hovera na polje koje ce ai da odigra
+    # da bi se azurirala boja koju gui klasa cuva (posto se to menja i tokom odigravanja poteza i tokom hovera)
+    hover_logika(polje, gui)
+
     if idx is not None:
         polje = igra.tabla.raspored_polja[idx]
-        _, _ = igra.odigraj_potez(polje, gui.originalna_boja, idx)
+        _, gui.originalna_boja = igra.odigraj_potez(polje, gui.originalna_boja, idx)
 
 if __name__ == "__main__":
     setup_dpi_awareness()
@@ -95,25 +110,25 @@ if __name__ == "__main__":
     running = True
     while running:
         # AI potez (pre event handling-a jer AI moze prvi da igra)
-        if igra.cpu_partija and not igra.kraj_igre[0] and igra.ai_na_potezu():
+        if igra.cpu_partija and not igra.kraj_igre[0] and igra.cpu_na_potezu():
             odigraj_ai_potez(igra, gui)
-            time.sleep(0.5)
-            continue
+            #time.sleep(0.5)
+            #continue
+        else:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                    continue
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
-                continue
+                if igra.kraj_igre[0]:
+                    continue
 
-            if igra.kraj_igre[0]:
-                continue
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if not igra.cpu_na_potezu():
+                        obradi_klik(igra, event.pos, gui)
 
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if not igra.ai_na_potezu():
-                    obradi_klik(igra, event.pos, gui)
-
-            elif event.type == pygame.MOUSEMOTION:
-                obradi_hover(event.pos, igra.tabla, gui)
+                elif event.type == pygame.MOUSEMOTION:
+                    obradi_hover(event.pos, igra.tabla, gui)
 
         gui.screen.fill(Boje.SIVA_POZADINA.value)
         gui.offset_x, gui.offset_y = nacrtaj_tablu(gui.screen, igra.tabla, gui.sirina_polja, gui.labele)
