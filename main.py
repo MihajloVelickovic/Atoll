@@ -1,4 +1,5 @@
 from gui.gui import Gui
+from gui.renderer import koordinate_polja
 from src.enums.boje import Boje
 from src.gui.renderer import prikazi_kraj_pobeda
 from src.models.igra import Igra
@@ -26,6 +27,8 @@ if __name__ == "__main__":
     gui.offset_x, gui.offset_y = nacrtaj_tablu(gui.screen, igra.tabla, gui.sirina_polja, gui.labele)
     pygame.display.flip()
 
+    kliknuta_dugmat_sliding_window = ['', '']
+    stari_string = None
     while running:
 
         # AI potez (pre event handling-a jer AI moze prvi da igra)
@@ -46,6 +49,19 @@ if __name__ == "__main__":
                     if event.key == pygame.K_q or pygame.K_ESCAPE:
                         running = False
                         continue
+
+                if event.type == pygame.KEYDOWN:
+                    if  48 <= event.key <= 57 or 65 <= event.key <= 90 or 97 <= event.key <= 122:
+                        kliknuta_dugmat_sliding_window[0] = kliknuta_dugmat_sliding_window[1]
+                        kliknuta_dugmat_sliding_window[1] = chr(event.key).upper()
+
+                if '' not in kliknuta_dugmat_sliding_window and not kliknuta_dugmat_sliding_window[0].isdecimal():
+                    polje_str = ''.join(kliknuta_dugmat_sliding_window)
+                    polje = igra.tabla[polje_str]
+                    if polje is not None and stari_string != polje_str:
+                        stari_string = polje_str
+                        idx = igra.tabla.raspored_polja.index(polje)
+                        gui.obradi_unos_sa_tastature(igra, polje, idx, gui)
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if not igra.cpu_na_potezu():
