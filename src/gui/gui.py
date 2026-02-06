@@ -42,6 +42,10 @@ class Gui:
         self.sirina_polja = max_board_height / ((2 * n + 1) * sqrt(3))
         self.visina_polja = sqrt(3) * self.sirina_polja
 
+    def obradi_unos_sa_tastature(self, igra, polje, idx, gui):
+        gui.hover_logika(polje)
+        _, self.originalna_boja = igra.odigraj_potez(polje, self.originalna_boja, idx)
+
     def obradi_klik(self, igra, event_pos):
         kliknuto, idx = nadji_kliknuto_polje(event_pos, igra.tabla, self.sirina_polja, self.visina_polja, self.offset_x,
                                              self.offset_y)
