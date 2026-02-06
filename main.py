@@ -42,20 +42,23 @@ if __name__ == "__main__":
                     running = False
                     continue
 
-                if igra.kraj_igre[0]:
-                    continue
-
                 if event.type == pygame.KEYUP:
                     if event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
                         running = False
                         continue
 
-                if event.type == pygame.KEYDOWN:
+                if igra.kraj_igre[0]:
+                    continue
+
+                if event.type == pygame.KEYUP:
                     if  48 <= event.key <= 57 or 65 <= event.key <= 90 or 97 <= event.key <= 122:
                         kliknuta_dugmat_sliding_window[0] = kliknuta_dugmat_sliding_window[1]
                         kliknuta_dugmat_sliding_window[1] = chr(event.key).upper()
 
-                if '' not in kliknuta_dugmat_sliding_window and not kliknuta_dugmat_sliding_window[0].isdecimal():
+                if ('' not in kliknuta_dugmat_sliding_window and
+                       not kliknuta_dugmat_sliding_window[0].isdecimal() and
+                       not kliknuta_dugmat_sliding_window[1].isalpha()):
+
                     polje_str = ''.join(kliknuta_dugmat_sliding_window)
                     polje = igra.tabla[polje_str]
                     if polje is not None and stari_string != polje_str:
