@@ -1,8 +1,9 @@
+from datetime import datetime
+
 from gui.gui import Gui
 from src.enums.boje import Boje
 from src.models.cpu import Cpu
 from src.models.tabla import Tabla
-from datetime import datetime
 
 class Igra:
 
@@ -45,8 +46,6 @@ class Igra:
            cpu_prvi = Igra.__unos_podataka_o_partiji("Odaberite prvog igraca:\n1. Covek\n2. CPU\n")
 
         beli_prvi = Igra.__unos_podataka_o_partiji("Odaberite prvog igraca:\n1. Crni\n2. Beli\n")
-
-        beli_cpu = tip_partije and ((beli_prvi and cpu_prvi) or (not beli_prvi and not cpu_prvi))
 
         cls.__instanca = Igra(n, tip_partije, cpu_prvi, beli_prvi)
         return cls.__instanca
@@ -134,7 +133,6 @@ class Igra:
         # ovaj fix u sustini simulira obradu hovera na polje koje ce ai da odigra
         # da bi se azurirala boja koju gui klasa cuva (posto se to menja i tokom odigravanja poteza i tokom hovera)
         gui.hover_logika(polje)
-
         if idx is not None:
             polje = self.tabla.raspored_polja[idx]
             _, gui.originalna_boja = self.odigraj_potez(polje, gui.originalna_boja, idx)

@@ -16,7 +16,7 @@ class Cpu:
         # radimo staticku evaluaciju za cvor,
         # i funkcija vraca stanje i njegovu procenjenu vrednost
         if dubina == 0 or not sva_sledeca_stanja:
-            return stanje, Cpu.proceni_stanje(stanje)
+            return stanje, Cpu.proceni_stanje(stanje, True)
 
         # najbolje stanje je logicno
         # u pocetku stanje za koje pozivamo minimax
@@ -63,6 +63,14 @@ class Cpu:
             return najbolje_stanje, min_vrednost
 
     @staticmethod
-    def proceni_stanje(stanje):
+    def proceni_stanje(stanje, debug):
+        if debug:
+            return randrange(1,10)
+
         #TODO: uraditi pravu heuristiku lmao
-        return randrange(1,10)
+
+
+
+
+        return None
+
