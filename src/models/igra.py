@@ -1,3 +1,4 @@
+from gui.gui import Gui
 from src.enums.boje import Boje
 from src.models.cpu import Cpu
 from src.models.tabla import Tabla
@@ -119,6 +120,24 @@ class Igra:
                 return True, originalna_boja
             return True, originalna_boja
         return None, originalna_boja
+
+    def odigraj_cpu_potez(self, gui: Gui):
+        idx = self.cpu_najbolji_potez()
+        polje = self.tabla.raspored_polja[idx]
+
+        # nadam se temp fix ali videcemo....
+        # problem je bio sto nakon odigranog poteza,
+        # kada se mis pomeri s polja koje je kliknuto,
+        # nakon cpu poteza bi se i ono obojilo u boju cpu igraca
+        # to se desavalo zbog elegantno nepismenog nacina cuvanja i obrade
+        # boja za razlicite dogadjaje u igri
+        # ovaj fix u sustini simulira obradu hovera na polje koje ce ai da odigra
+        # da bi se azurirala boja koju gui klasa cuva (posto se to menja i tokom odigravanja poteza i tokom hovera)
+        gui.hover_logika(polje)
+
+        if idx is not None:
+            polje = self.tabla.raspored_polja[idx]
+            _, gui.originalna_boja = self.odigraj_potez(polje, gui.originalna_boja, idx)
 
     def novo_stanje(self, idx):
         if self.stanja[-1][idx + 1] == 1:
