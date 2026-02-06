@@ -46,7 +46,7 @@ if __name__ == "__main__":
                     continue
 
                 if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_q or pygame.K_ESCAPE:
+                    if event.key == pygame.K_q or event.key == pygame.K_ESCAPE:
                         running = False
                         continue
 
