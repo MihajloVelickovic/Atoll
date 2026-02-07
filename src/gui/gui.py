@@ -63,3 +63,12 @@ class Gui:
         if hover != self.prethodno_hover_polje:
             # print(f"HOVER: {hover}, ORIG.BOJA:{gui.originalna_boja}") #debug
             self.hover_logika(hover)
+
+    @staticmethod
+    def obradi_promenu_hovera_tastatura(igra, boje, selekcija):
+        if boje:
+            try:
+                for x, b in zip(igra.tabla[selekcija], boje):
+                    ukloni_hover_efekat(x, b)
+            except TypeError:
+                ukloni_hover_efekat(igra.tabla[selekcija], boje)

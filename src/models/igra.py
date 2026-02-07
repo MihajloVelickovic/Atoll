@@ -109,7 +109,7 @@ class Igra:
 
             self.novo_stanje(idx)
             if self.tabla.provera_pobede(kliknuto):
-                print(f"{"(CPU) " if not self.cpu_na_potezu() else ""}{"C:" if kliknuto.boja == Boje.CRNA else "B:" } Pobeda")
+                print(f"{"[CPU] " if self.cpu_partija and not self.cpu_na_potezu() else ""}{"C:" if kliknuto.boja == Boje.CRNA else "B:" } Pobeda")
                 self.kraj_igre = (True, True)
                 return True, kliknuto.boja
 

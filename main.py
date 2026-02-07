@@ -13,7 +13,7 @@ if __name__ == "__main__":
     gui = Gui()
 
     #igra = Igra.konstrukcija()
-    igra = Igra.debug_konstrukcija(7, False, True, False)
+    igra = Igra.debug_konstrukcija(3, False, True, False)
     # igra = Igra.debug_konstrukcija(3, False, False, True)
 
     gui.init_pygame()
@@ -26,9 +26,8 @@ if __name__ == "__main__":
     gui.screen.fill(Boje.SIVA_POZADINA.value)
     gui.offset_x, gui.offset_y = nacrtaj_tablu(gui.screen, igra.tabla, gui.sirina_polja, gui.labele)
     pygame.display.flip()
-    najnovije_dugme = []
     boje_u_redu = []
-    selected = ['']
+    selektovan_red_ili_polje = ['']
     stara_selekcija = None
     while running:
 
@@ -55,16 +54,14 @@ if __name__ == "__main__":
                 if event.type == pygame.KEYUP:
                     # ako je pritisnut enter, odigrava potez na selektovanom polju
                     # (ako je neko polje uopste selektovano)
-                    if event.key == pygame.K_RETURN:
-
-                        polje_str = ''.join(selected)
+                    if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                        polje_str = ''.join(selektovan_red_ili_polje)
                         if len(polje_str) > 1:
                             polje = igra.tabla[polje_str]
-
                             if polje is not None:
                                 idx = igra.tabla.raspored_polja.index(polje)
                                 gui.obradi_unos_sa_tastature(igra, polje, idx, gui)
-                                selected = ['']
+                                selektovan_red_ili_polje = ['']
                                 stara_selekcija = None
 
                     # u niz polja se unose samo validni elementi
@@ -75,56 +72,47 @@ if __name__ == "__main__":
                           (ord('0') <= event.key <= ord('9') or
                            igra.tabla.n * 2 > (ord(chr(event.key).upper()) - ord('A')) % 25)):
 
+                        # uppercase karakter koji je sada pretisnut
+                        # reduntandno ako je broj ali sta da se radi
                         najnovije_dugme= chr(event.key).upper()
 
+                        # ako je uneseno slovo, resetuje se lista koja pamti selekciju
+                        # i novo slovo se postavlja za prvi element
+                        # primenjuje se hover efekat svim poljima tog slova
                         if najnovije_dugme.isalpha():
-                            selected.clear()
-                            selected.append(najnovije_dugme)
-                            if boje_u_redu:
-                                try:
-                                    for x, b in zip(igra.tabla[stara_selekcija], boje_u_redu):
-                                        ukloni_hover_efekat(x, b)
-                                except TypeError:
-                                    ukloni_hover_efekat(igra.tabla[stara_selekcija], boje_u_redu)
-                            stara_selekcija = selected[0]
-                            a = igra.tabla[selected[0]][1:-1]
-                            boje_u_redu = [primeni_hover_efekat(x) for x in igra.tabla[selected[0]]]
+                            selektovan_red_ili_polje.clear()
+                            selektovan_red_ili_polje.append(najnovije_dugme)
+                            gui.obradi_promenu_hovera_tastatura(igra, boje_u_redu, stara_selekcija)
+                            stara_selekcija = selektovan_red_ili_polje[0]
+                            boje_u_redu = [primeni_hover_efekat(x) for x in igra.tabla[selektovan_red_ili_polje[0]]]
 
-                        if '' not in selected and len(selected) < 3 and najnovije_dugme.isdigit():
-                            selected.append(najnovije_dugme)
-                            polje_str = ''.join(selected)
+                        # ako je unesen broj, nakon sto zasigurno vec ima slova na prvoj poziciji
+                        # i s uslovom da mogu najvise 2 broja da se unesu,
+                        # suzavamo selekciju na konkretno polje zadato prethodnim slovom, i novim brojem
+                        # radi i za dvocifrene brojeve!!
+                        if '' not in selektovan_red_ili_polje and len(selektovan_red_ili_polje) < 3 and najnovije_dugme.isdigit():
+                            selektovan_red_ili_polje.append(najnovije_dugme)
+                            polje_str = ''.join(selektovan_red_ili_polje)
                             if igra.tabla[polje_str]:
-                                if boje_u_redu:
-                                    try:
-                                        for x, b in zip(igra.tabla[stara_selekcija], boje_u_redu):
-                                            ukloni_hover_efekat(x, b)
-                                    except TypeError:
-                                        ukloni_hover_efekat(igra.tabla[stara_selekcija], boje_u_redu)
+                                gui.obradi_promenu_hovera_tastatura(igra, boje_u_redu, stara_selekcija)
                                 stara_selekcija = polje_str
                                 boje_u_redu = primeni_hover_efekat(igra.tabla[polje_str])
 
+                # u ovom i sledecem eventu se , osim njihovih
+                # standardnih zaduzenja, ciste hoveri i selekcije
+                # unete tastaturom (prethodni event)
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    selected.clear()
-                    selected.append('')
-                    if boje_u_redu:
-                        try:
-                            for x, b in zip(igra.tabla[stara_selekcija], boje_u_redu):
-                                ukloni_hover_efekat(x, b)
-                        except TypeError:
-                            ukloni_hover_efekat(igra.tabla[stara_selekcija], boje_u_redu)
+                    selektovan_red_ili_polje.clear()
+                    selektovan_red_ili_polje.append('')
+                    gui.obradi_promenu_hovera_tastatura(igra, boje_u_redu, stara_selekcija)
                     stara_selekcija = None
                     if not igra.cpu_na_potezu():
                         gui.obradi_klik(igra, event.pos)
 
                 elif event.type == pygame.MOUSEMOTION:
-                    selected.clear()
-                    selected.append('')
-                    if boje_u_redu:
-                        try:
-                            for x, b in zip(igra.tabla[stara_selekcija], boje_u_redu):
-                                ukloni_hover_efekat(x, b)
-                        except TypeError:
-                            ukloni_hover_efekat(igra.tabla[stara_selekcija], boje_u_redu)
+                    selektovan_red_ili_polje.clear()
+                    selektovan_red_ili_polje.append('')
+                    gui.obradi_promenu_hovera_tastatura(igra, boje_u_redu, stara_selekcija)
                     stara_selekcija = None
                     gui.obradi_hover(event.pos, igra.tabla)
 
@@ -139,11 +127,3 @@ if __name__ == "__main__":
 
     pygame.quit()
     igra.sacuvaj_izvestaj(igra.kraj_igre)
-
-# def obradi_promenu_hovera_tastatura(igra, boje, selekcija):
-#     if boje:
-#         try:
-#             for x, b in zip(igra.tabla[selekcija], boje):
-#                 ukloni_hover_efekat(x, b)
-#         except TypeError:
-#             ukloni_hover_efekat(igra.tabla[selekcija], boje)
