@@ -1,5 +1,4 @@
 from gui.gui import Gui
-from gui.renderer import koordinate_polja
 from src.enums.boje import Boje
 from src.gui.renderer import prikazi_kraj_pobeda
 from src.models.igra import Igra
@@ -13,7 +12,7 @@ if __name__ == "__main__":
     gui = Gui()
 
     #igra = Igra.konstrukcija()
-    igra = Igra.debug_konstrukcija(3, True, True, True)
+    igra = Igra.debug_konstrukcija(5, False, True, False)
     # igra = Igra.debug_konstrukcija(3, False, False, True)
 
     gui.init_pygame()
