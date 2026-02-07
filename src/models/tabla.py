@@ -21,23 +21,26 @@ class Tabla:
             return None  # todo raise
 
         stripped = key.strip()
-        if len(stripped) > 2 or len(stripped) < 1:
+        if len(stripped) > 3 or len(stripped) < 1:
             return None  # todo raise
 
-        if len(stripped) == 2:
-            polje = \
-            [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(stripped[1])][0]
-            index = self.__raspored_polja.index(polje)
-            for o in self.__ostrva:
-                if index in o.polja:
-                    return o
-            return polje
+        if key.isalpha():
+            if len(stripped) != 1 or (ord(key.capitalize()) - ord('A')) % 25 >= self.n * 2:
+                return None
+            return [x for x in self.__raspored_polja if x.slovo == key.capitalize()]
+
+        elif key.isdecimal():
+            if len(stripped) < 1 or len(stripped) > 2 or int(key) > self.n * 2 or int(key) < 0:
+                return None
+            return [x for x in self.__raspored_polja if x.broj == int(key)]
         else:
-            if stripped.isdigit():
-                return [x for x in self.__raspored_polja if x.broj == int(stripped[0])]
-            elif stripped.isalpha():
-                return [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize()]
-            return None
+            if (ord(stripped[0].capitalize()) - ord('A')) % 25 >= self.n * 2 or int(''.join(stripped[1:])) > self.n * 2:
+                return None
+            polje = \
+            [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(''.join(stripped[1:]))]
+            polje = polje[0] if polje else None
+            return polje
+
 
     @property #pretvara metodu u atribut
     def raspored_polja(self):
