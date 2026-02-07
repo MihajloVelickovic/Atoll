@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from gui.gui import Gui
+from src.gui.gui import Gui
 from src.enums.boje import Boje
 from src.models.cpu import Cpu
 from src.models.tabla import Tabla
@@ -90,12 +90,17 @@ class Igra:
         cpu_je_beli = self.cpu_prvi == self.beli_prvi
         return self.trenutni_potez == cpu_je_beli
 
+    def cpu_boja(self):
+        if not self.cpu_partija:
+            return None
+        cpu_je_beli = self.cpu_prvi == self.beli_prvi
+        cpu_boja = Boje.BELA if cpu_je_beli else Boje.CRNA
+        return cpu_boja
+
     def cpu_najbolji_potez(self):
         if not self.cpu_partija:
             return None
-        najbolje_stanje = Cpu.minimax(self.stanja[-1], 3, True)
-        potez = najbolje_stanje[0][1:] ^ self.stanja[-1][1:]
-        return potez.next_set_bit()
+        return Cpu.najbolji_potez(self.tabla, self.cpu_boja())
 
     def odigraj_potez(self, kliknuto, originalna_boja, idx):
         if kliknuto:

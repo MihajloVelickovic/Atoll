@@ -1,5 +1,5 @@
-from gui.gui import Gui
-from gui.input import primeni_hover_efekat, ukloni_hover_efekat
+from src.gui.gui import Gui
+from src.gui.input import primeni_hover_efekat, ukloni_hover_efekat
 from src.enums.boje import Boje
 from src.gui.renderer import prikazi_kraj_pobeda
 from src.models.igra import Igra
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     gui = Gui()
 
     #igra = Igra.konstrukcija()
-    igra = Igra.debug_konstrukcija(3, False, True, False)
+    igra = Igra.debug_konstrukcija(5, True, False, False)
     # igra = Igra.debug_konstrukcija(3, False, False, True)
 
     gui.init_pygame()
@@ -43,17 +43,18 @@ if __name__ == "__main__":
                     running = False
                     continue
 
-                if event.type == pygame.KEYUP:
-                    if event.key == pygame.K_ESCAPE:
-                        running = False
-                        continue
-
                 if igra.kraj_igre[0]:
                     continue
 
                 if event.type == pygame.KEYUP:
+                    # ako je pritisnut escape, gasi se program
                     # ako je pritisnut enter, odigrava potez na selektovanom polju
                     # (ako je neko polje uopste selektovano)
+
+                    if event.key == pygame.K_ESCAPE:
+                        running = False
+                        continue
+
                     if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
                         polje_str = ''.join(selektovan_red_ili_polje)
                         if len(polje_str) > 1:

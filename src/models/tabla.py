@@ -13,7 +13,7 @@ class Tabla:
         self.__ostrva = [Ostrvo() for _ in range(12)]
         self.__generisi_tablu()
 
-    #region Pomocne funkcije, getteri, overrideovi
+    #region Pomocne funkcije, funkcije simulacije , getteri, overrideovi
 
     # override za []
     def __getitem__(self, key):
@@ -21,26 +21,23 @@ class Tabla:
             return None  # todo raise
 
         stripped = key.strip()
-        if len(stripped) > 3 or len(stripped) < 1:
+        if len(stripped) > 2 or len(stripped) < 1:
             return None  # todo raise
 
-        if key.isalpha():
-            if len(stripped) != 1 or (ord(key.capitalize()) - ord('A')) % 25 >= self.n * 2:
-                return None
-            return [x for x in self.__raspored_polja if x.slovo == key.capitalize()]
-
-        elif key.isdecimal():
-            if len(stripped) < 1 or len(stripped) > 2 or int(key) > self.n * 2 or int(key) < 0:
-                return None
-            return [x for x in self.__raspored_polja if x.broj == int(key)]
-        else:
-            if (ord(stripped[0].capitalize()) - ord('A')) % 25 >= self.n * 2 or int(''.join(stripped[1:])) > self.n * 2:
-                return None
+        if len(stripped) == 2:
             polje = \
-            [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(''.join(stripped[1:]))]
-            polje = polje[0] if polje else None
+            [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(stripped[1])][0]
+            index = self.__raspored_polja.index(polje)
+            for o in self.__ostrva:
+                if index in o.polja:
+                    return o
             return polje
-
+        else:
+            if stripped.isdigit():
+                return [x for x in self.__raspored_polja if x.broj == int(stripped[0])]
+            elif stripped.isalpha():
+                return [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize()]
+            return None
 
     @property #pretvara metodu u atribut
     def raspored_polja(self):
@@ -71,8 +68,7 @@ class Tabla:
 
         return sva_moguca_stanja
 
-
-    # Prikazuje informacije o tabli nakon generisanja
+    # prikazuje informacije o tabli nakon generisanja
     def prikaz_polja(self):
         print("Polja:")
         for i in self.__raspored_polja:
@@ -107,6 +103,99 @@ class Tabla:
     # vraca sva granicna polja table
     def granice(self):
         return [x for x in self.__raspored_polja if x.granica[0] is True]
+
+    def svi_moguci_potezi_idx(self):
+        """Vraca listu indeksa svih slobodnih polja."""
+        return [i for i, polje in enumerate(self.__raspored_polja)
+                if polje.boja in (Boje.BEZ, Boje.BEZ_TAMNA)]
+
+    # primenjuje potez za cpu simulaciju bez bocnih efekata
+    # samo menja boju polja, ne poziva provera_pobede()
+    def primeni_potez_simulacija(self, idx, boja):
+        polje = self.__raspored_polja[idx]
+        polje.boja = boja
+
+    # ponistava potez, to jest vraca polje u prazno stanje.
+    # koristi se za minimax da izbegne deepcopy.
+    def ponisti_potez(self, idx):
+        polje = self.__raspored_polja[idx]
+        polje.boja = Boje.BEZ
+
+    # provera pobede za cpu simulaciju, bez bocnih efekata.
+    # ne menja __putevi, ne stampa nista.
+    def provera_pobede_simulacija(self, boja):
+
+        # provera koja ostrva su aktivna (imaju kamencic uz sebe)
+        # bez da radi povezivanje ostrva (nesto me je zezalo ponistavanje)
+        # svakako nije presporo, svako polje ima max 6 komsija
+        ostrva_boje = [o for o in self.__ostrva if o.boja == boja]
+        aktivna_ostrva = []
+
+        for o in ostrva_boje:
+            for s_idx in o.susedi:
+                if self.__raspored_polja[s_idx].boja == boja:
+                    aktivna_ostrva.append(o)
+                    break
+
+        if len(aktivna_ostrva) < 2:
+            return False
+
+        # proveri sve parove aktivnih ostrva za puteve
+        for i, o1 in enumerate(aktivna_ostrva):
+            for o2 in aktivna_ostrva[i+1:]:
+                if self.__postoji_put_simulacija(o1, o2):
+                    # Izracunaj duzinu obodnog puta
+                    idx1 = self.__ostrva.index(o1)
+                    idx2 = self.__ostrva.index(o2)
+                    duzina = self.duzina_obodnog_puta(idx1, idx2)
+                    if duzina >= self.__uslov_pobede:
+                        return True
+
+        return False
+
+    def __postoji_put_simulacija(self, o1, o2):
+        queue = deque()
+        visited = set()
+
+        for s_idx in o1.susedi:
+            if self.__raspored_polja[s_idx].boja == o1.boja:
+                queue.append(s_idx)
+
+        while queue:
+            idx = queue.popleft()
+            if idx in visited:
+                continue
+            visited.add(idx)
+
+            polje = self.__raspored_polja[idx]
+            if polje.boja != o1.boja:
+                continue
+
+            if idx in o2.susedi:
+                return True
+
+            for s_idx in polje.susedi:
+                if s_idx not in visited:
+                    queue.append(s_idx)
+
+        return False
+
+    # racuna duzinu obodnog puta izmedju dva ostrva (broji ostrva ukrug)
+    @staticmethod
+    def duzina_obodnog_puta(idx1, idx2):
+        # clockwise duzina
+        if idx2 > idx1:
+            cw = (idx2 - idx1) // 2 + 1
+        else:
+            cw = (12 - idx1 + idx2) // 2 + 1
+
+        # counter clockwise duzina
+        if idx1 > idx2:
+            ccw = (idx1 - idx2) // 2 + 1
+        else:
+            ccw = (12 - idx2 + idx1) // 2 + 1
+
+        return min(cw, ccw)
 
     #endregion
 
@@ -274,13 +363,12 @@ class Tabla:
     #endregion
 
     #region Provera pobede
-    '''
-    mozda nije najbolje ime
-    ali funkcija je tablin deo odigravanja poteza
-    znaci povezivanje ostrva ako je kliknuto polje susedno ostrvu,
-    provera postojanja puteva izmedju ostrva te boje
-    i provera da li je neki od tih puteva pobednicki
-    '''
+
+    # mozda nije najbolje ime
+    # ali funkcija je tablin deo odigravanja poteza
+    # znaci povezivanje ostrva ako je kliknuto polje susedno ostrvu,
+    # provera postojanja puteva izmedju ostrva te boje
+    # i provera da li je neki od tih puteva pobednicki
     def provera_pobede(self, kliknuto_polje):
         self.__povezi_ostrva(kliknuto_polje.susedi, kliknuto_polje.boja)
         putevi = self.__proveri_puteve(kliknuto_polje.boja)
@@ -301,7 +389,7 @@ class Tabla:
                 break
 
     # True / False da li postoji put izmedju dva ostrva
-    def __postoji_put(self, o1: Ostrvo, o2: Ostrvo, stampaj):
+    def __postoji_put(self, o1, o2, stampaj):
         if not o1.povezano or not o2.povezano or o1.boja != o2.boja:
             return False
 
@@ -330,16 +418,14 @@ class Tabla:
 
         return False
 
-    '''
-    funkcija formira listu listi boolova
-    svaki bool predstavlja postojanje puta izmedju ostrva
-    prva lista je prvo ostrvo te boje, druga drugo itd
-    svaki element listi je bool koji predstavlja da li je ostrvo povezano sa 
-    tim ostrvom za koje posmatramo bool
-    primer: lista na polju [2] u skup_svih_puteva, za belu boju, je
-    ostrvo sa indeksom [4] na listi ostrva, i moze da bude povezano sa ostrvima [0, 2, 6, 8 i 10]
-    True / False u toj listi na polju sa indeksom [4] su onda redom da li je ostrvo povezano sa tim ostrvima
-    '''
+    # funkcija formira listu listi boolova
+    # svaki bool predstavlja postojanje puta izmedju ostrva
+    # prva lista je prvo ostrvo te boje, druga drugo itd
+    # svaki element listi je bool koji predstavlja da li je ostrvo povezano sa
+    # tim ostrvom za koje posmatramo bool
+    # primer: lista na polju [2] u skup_svih_puteva, za belu boju, je
+    # ostrvo sa indeksom [4] na listi ostrva, i moze da bude povezano sa ostrvima [0, 2, 6, 8 i 10]
+    # True / False u toj listi na polju sa indeksom [4] su onda redom da li je ostrvo povezano sa tim ostrvima
     def __proveri_puteve(self, boja):
         ostrva_date_boje = [idx for idx, x in enumerate(self.__ostrva) if x.boja == boja]
         skup_svih_puteva = []
@@ -375,11 +461,9 @@ class Tabla:
         else:
             return False
 
-    '''
-    funkcija koja na osnovu boje igraca koji je odigrao potez
-    i skupa svih postojecih puteva medju ostrvima
-    odredjuje da li je igrac ispunio uslov pobede
-    '''
+    # funkcija koja na osnovu boje igraca koji je odigrao potez
+    # i skupa svih postojecih puteva medju ostrvima
+    # odredjuje da li je igrac ispunio uslov pobede
     def __pobeda(self, svi_putevi, boja, novi_put):
         if not novi_put:
             return False
