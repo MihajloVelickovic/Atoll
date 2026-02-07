@@ -26,7 +26,7 @@ if __name__ == "__main__":
     gui.screen.fill(Boje.SIVA_POZADINA.value)
     gui.offset_x, gui.offset_y = nacrtaj_tablu(gui.screen, igra.tabla, gui.sirina_polja, gui.labele)
     pygame.display.flip()
-    kliknuta_dugmad_sliding_window = []
+    najnovije_dugme = []
     boje_u_redu = []
     selected = ['']
     stara_selekcija = None
@@ -53,49 +53,33 @@ if __name__ == "__main__":
                     continue
 
                 if event.type == pygame.KEYUP:
-                    # u listu se dodaju samo validna slova (slova od a
+                    # ako je pritisnut enter, odigrava potez na selektovanom polju
+                    # (ako je neko polje uopste selektovano)
                     if event.key == pygame.K_RETURN:
 
-                        # if not len(kliknuta_dugmad_sliding_window) < 2:
-                        #     if kliknuta_dugmad_sliding_window[-2].isalpha():
-                        #         kliknuta_dugmad_sliding_window = kliknuta_dugmad_sliding_window[-2:]
-                        #     else:
-                        #         kliknuta_dugmad_sliding_window = kliknuta_dugmad_sliding_window[-3:]
-                        #
-                        # if not (len(kliknuta_dugmad_sliding_window) < 2 or
-                        #         len(kliknuta_dugmad_sliding_window) > 3 or
-                        #         kliknuta_dugmad_sliding_window[0].isdecimal() or
-                        #         kliknuta_dugmad_sliding_window[1].isalpha() or
-                        #         len(kliknuta_dugmad_sliding_window) == 3 and kliknuta_dugmad_sliding_window[2].isalpha()):
-                        #
-                        #     polje_str = ''.join(kliknuta_dugmad_sliding_window)
-                        #     if not (int(polje_str[1:]) < 0 or int(polje_str[1:]) > igra.tabla.n * 2):
-                        #         polje = igra.tabla[polje_str]
-                        #         if polje is not None:
-                        #             idx = igra.tabla.raspored_polja.index(polje)
-                        #             gui.obradi_unos_sa_tastature(igra, polje, idx, gui)
-                        #     else:
-                        #         print(f"Polje {polje_str} ne postoji")
-                        # kliknuta_dugmad_sliding_window.clear()
                         polje_str = ''.join(selected)
-                        polje = igra.tabla[polje_str]
+                        if len(polje_str) > 1:
+                            polje = igra.tabla[polje_str]
 
-                        if polje is not None:
-                            idx = igra.tabla.raspored_polja.index(polje)
-                            gui.obradi_unos_sa_tastature(igra, polje, idx, gui)
+                            if polje is not None:
+                                idx = igra.tabla.raspored_polja.index(polje)
+                                gui.obradi_unos_sa_tastature(igra, polje, idx, gui)
+                                selected = ['']
+                                stara_selekcija = None
 
-
+                    # u niz polja se unose samo validni elementi
+                    # cifre (0-9), slova od z do poslednjeg validnog za igra.tabla.n
                     elif ((ord('0') <= event.key <= ord('9') or
                            ord('A') <= event.key <= ord('Z') or
                            ord('a') <= event.key <= ord('z')) and
                           (ord('0') <= event.key <= ord('9') or
                            igra.tabla.n * 2 > (ord(chr(event.key).upper()) - ord('A')) % 25)):
 
-                        kliknuta_dugmad_sliding_window.append(chr(event.key).upper())
+                        najnovije_dugme= chr(event.key).upper()
 
-                        if kliknuta_dugmad_sliding_window[-1].isalpha():
+                        if najnovije_dugme.isalpha():
                             selected.clear()
-                            selected.append(kliknuta_dugmad_sliding_window[-1])
+                            selected.append(najnovije_dugme)
                             if boje_u_redu:
                                 try:
                                     for x, b in zip(igra.tabla[stara_selekcija], boje_u_redu):
@@ -106,8 +90,8 @@ if __name__ == "__main__":
                             a = igra.tabla[selected[0]][1:-1]
                             boje_u_redu = [primeni_hover_efekat(x) for x in igra.tabla[selected[0]]]
 
-                        if '' not in selected and len(selected) < 3 and kliknuta_dugmad_sliding_window[-1].isdigit():
-                            selected.append(kliknuta_dugmad_sliding_window[-1])
+                        if '' not in selected and len(selected) < 3 and najnovije_dugme.isdigit():
+                            selected.append(najnovije_dugme)
                             polje_str = ''.join(selected)
                             if igra.tabla[polje_str]:
                                 if boje_u_redu:
@@ -119,10 +103,9 @@ if __name__ == "__main__":
                                 stara_selekcija = polje_str
                                 boje_u_redu = primeni_hover_efekat(igra.tabla[polje_str])
 
-                        print(selected)
-
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    selected = ['']
+                    selected.clear()
+                    selected.append('')
                     if boje_u_redu:
                         try:
                             for x, b in zip(igra.tabla[stara_selekcija], boje_u_redu):
@@ -134,7 +117,8 @@ if __name__ == "__main__":
                         gui.obradi_klik(igra, event.pos)
 
                 elif event.type == pygame.MOUSEMOTION:
-                    selected = ['']
+                    selected.clear()
+                    selected.append('')
                     if boje_u_redu:
                         try:
                             for x, b in zip(igra.tabla[stara_selekcija], boje_u_redu):
@@ -155,3 +139,11 @@ if __name__ == "__main__":
 
     pygame.quit()
     igra.sacuvaj_izvestaj(igra.kraj_igre)
+
+# def obradi_promenu_hovera_tastatura(igra, boje, selekcija):
+#     if boje:
+#         try:
+#             for x, b in zip(igra.tabla[selekcija], boje):
+#                 ukloni_hover_efekat(x, b)
+#         except TypeError:
+#             ukloni_hover_efekat(igra.tabla[selekcija], boje)
