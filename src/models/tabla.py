@@ -1,3 +1,4 @@
+import random
 from collections import deque
 from BitVector import BitVector
 from src.models.ostrvo import Ostrvo
@@ -11,7 +12,10 @@ class Tabla:
         self.__raspored_polja = []
         self.__putevi = [[[False for _ in range(5)] for _ in range(6)] for _ in range(2)]
         self.__ostrva = [Ostrvo() for _ in range(12)]
+        self.__zobrist_hash = None
+        self.__zobrist_tabela = []
         self.__generisi_tablu()
+        self.__inicijalizuj_zobrist()
 
     #region Pomocne funkcije, funkcije simulacije , getteri, overrideovi
 
@@ -51,6 +55,17 @@ class Tabla:
     @property
     def n(self):
         return self.__n
+
+    # zobrist hash trenutnog stanja table
+    @property
+    def zobrist_hash(self):
+        return self.__zobrist_hash
+
+    # ponovo racuna zobrist hash iz kompletnog stanja table
+    # poziva se pre pretrage da osigura tacnost hasha nakon sto su odigrani pravi potezi
+    def izracunaj_zobrist_hash(self):
+        self.__zobrist_hash = self.__izracunaj_hash()
+        return self.__zobrist_hash
 
     @staticmethod
     def svi_moguci_potezi(stanje):
@@ -104,36 +119,76 @@ class Tabla:
     def granice(self):
         return [x for x in self.__raspored_polja if x.granica[0] is True]
 
-    def svi_moguci_potezi_idx(self):
-        """Vraca listu indeksa svih slobodnih polja."""
-        return [i for i, polje in enumerate(self.__raspored_polja)
-                if polje.boja in (Boje.BEZ, Boje.BEZ_TAMNA)]
+    # vraca samo slobodna polja koja su susedna bar jednom zauzetom polju
+    # drasticno smanjuje broj poteza koje minimax ispituje
+    # umesto svih 61 praznih polja (za n=5), vraca 20ak
+    def relevantni_potezi(self):
+        relevantni = []
+        for i, polje in enumerate(self.__raspored_polja):
+            if polje.boja not in (Boje.BEZ, Boje.BEZ_TAMNA):
+                continue
+            # provera da li ima bar jednog zauzetog suseda (crnog ili belog)
+            for s in polje.susedi:
+                if self.__raspored_polja[s].boja in (Boje.CRNA, Boje.BELA):
+                    relevantni.append(i)
+                    break
+        return relevantni
 
     # primenjuje potez za cpu simulaciju bez bocnih efekata
     # samo menja boju polja, ne poziva provera_pobede()
+    # azurira zobrist hash inkrementalno
     def primeni_potez_simulacija(self, idx, boja):
         polje = self.__raspored_polja[idx]
         polje.boja = boja
+        boja_idx = 0 if boja == Boje.CRNA else 1
+        self.__zobrist_hash ^= self.__zobrist_tabela[idx][boja_idx]
+        self.__zobrist_hash ^= self.__zobrist_na_potezu
 
-    # ponistava potez, to jest vraca polje u prazno stanje.
-    # koristi se za minimax da izbegne deepcopy.
-    def ponisti_potez(self, idx):
+    # ponistava potez, to jest vraca polje u prazno stanje
+    # koristi se za minimax da izbegne deepcopy
+    # prima boju kamena koji se uklanja radi azuriranja zobrist hasha
+    def ponisti_potez(self, idx, boja):
         polje = self.__raspored_polja[idx]
         polje.boja = Boje.BEZ
+        boja_idx = 0 if boja == Boje.CRNA else 1
+        self.__zobrist_hash ^= self.__zobrist_tabela[idx][boja_idx]
+        self.__zobrist_hash ^= self.__zobrist_na_potezu
+
+    # inicijalizacija zobrist tabele i pocetnog hasha
+    def __inicijalizuj_zobrist(self):
+        rng = random.Random(42)
+        # za svako polje generisemo dva slucajna 64-bitna broja
+        # (za crnu i belu boju posebno)
+        self.__zobrist_tabela = [[rng.getrandbits(64), rng.getrandbits(64)] for _ in range(len(self.__raspored_polja))]
+
+        # broj koji se xoruje pri svakom potezu za razlikovanje strane na potezu
+        self.__zobrist_na_potezu = rng.getrandbits(64)
+        self.__zobrist_hash = self.__izracunaj_hash()
+
+    # racuna zobrist hash kompletne table od nule
+    # prolazi kroz sva polja i xoruje odgovarajuce random brojeve
+    def __izracunaj_hash(self):
+        hes = 0
+        for i, polje in enumerate(self.__raspored_polja):
+            if polje.boja == Boje.CRNA:
+                hes ^= self.__zobrist_tabela[i][0]
+            elif polje.boja == Boje.BELA:
+                hes ^= self.__zobrist_tabela[i][1]
+        return hes
 
     # provera pobede za cpu simulaciju, bez bocnih efekata.
     # ne menja __putevi, ne stampa nista.
     def provera_pobede_simulacija(self, boja):
 
-        # provera koja ostrva su aktivna (imaju kamencic uz sebe)
+        # provera koja ostrva su aktivna, to jest imaju kamencic uz sebe
         # bez da radi povezivanje ostrva (nesto me je zezalo ponistavanje)
         # svakako nije presporo, svako polje ima max 6 komsija
         ostrva_boje = [o for o in self.__ostrva if o.boja == boja]
         aktivna_ostrva = []
 
         for o in ostrva_boje:
-            for s_idx in o.susedi:
-                if self.__raspored_polja[s_idx].boja == boja:
+            for s in o.susedi:
+                if self.__raspored_polja[s].boja == boja:
                     aktivna_ostrva.append(o)
                     break
 
@@ -144,7 +199,7 @@ class Tabla:
         for i, o1 in enumerate(aktivna_ostrva):
             for o2 in aktivna_ostrva[i+1:]:
                 if self.__postoji_put_simulacija(o1, o2):
-                    # Izracunaj duzinu obodnog puta
+                    # izracunaj duzinu obodnog puta
                     idx1 = self.__ostrva.index(o1)
                     idx2 = self.__ostrva.index(o2)
                     duzina = self.duzina_obodnog_puta(idx1, idx2)
@@ -157,9 +212,9 @@ class Tabla:
         queue = deque()
         visited = set()
 
-        for s_idx in o1.susedi:
-            if self.__raspored_polja[s_idx].boja == o1.boja:
-                queue.append(s_idx)
+        for s in o1.susedi:
+            if self.__raspored_polja[s].boja == o1.boja:
+                queue.append(s)
 
         while queue:
             idx = queue.popleft()
@@ -174,9 +229,9 @@ class Tabla:
             if idx in o2.susedi:
                 return True
 
-            for s_idx in polje.susedi:
-                if s_idx not in visited:
-                    queue.append(s_idx)
+            for s in polje.susedi:
+                if s not in visited:
+                    queue.append(s)
 
         return False
 

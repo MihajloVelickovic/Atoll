@@ -1,3 +1,5 @@
+from enums.cpukonfig import CpuKonfig
+from src.models.cpu import Cpu
 from src.gui.gui import Gui
 from src.gui.input import primeni_hover_efekat, ukloni_hover_efekat
 from src.enums.boje import Boje
@@ -12,10 +14,11 @@ if __name__ == "__main__":
 
     gui = Gui()
 
-    #igra = Igra.konstrukcija()
-    igra = Igra.debug_konstrukcija(5, True, False, False)
-    # igra = Igra.debug_konstrukcija(3, False, False, True)
-
+    igra = Igra.konstrukcija()
+    if igra.cpu_partija:
+        Cpu.postavi_vreme_trazenja(igra.tabla.n)
+    #igra = Igra.debug_konstrukcija(5, True, True, False)
+    #igra = Igra.debug_konstrukcija(3, False, False, True)
     gui.init_pygame()
     gui.izracunaj_dimenzije_polja(igra.tabla.n)
 
@@ -46,14 +49,15 @@ if __name__ == "__main__":
                 if igra.kraj_igre[0]:
                     continue
 
+                # ako je pritisnut escape, gasi se program
                 if event.type == pygame.KEYUP:
-                    # ako je pritisnut escape, gasi se program
-                    # ako je pritisnut enter, odigrava potez na selektovanom polju
-                    # (ako je neko polje uopste selektovano)
-
                     if event.key == pygame.K_ESCAPE:
                         running = False
                         continue
+
+                if event.type == pygame.KEYUP:
+                    # ako je pritisnut enter, odigrava potez na selektovanom polju
+                    # (ako je neko polje uopste selektovano)
 
                     if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
                         polje_str = ''.join(selektovan_red_ili_polje)
