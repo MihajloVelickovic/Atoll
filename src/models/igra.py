@@ -5,8 +5,8 @@ from src.enums.boje import Boje
 from src.models.cpu import Cpu
 from src.models.tabla import Tabla
 
-class Igra:
 
+class Igra:
     __instanca = None
 
     def __new__(cls, *args, **kwargs):
@@ -23,7 +23,7 @@ class Igra:
         self.beli_prvi = beli_prvi
         self.stanja = [self.tabla.bit_vector(beli_prvi)]
         self.trenutni_potez = beli_prvi
-        self.kraj_igre = (False, False) # (zavrsena_igra, zavrsena_pobedom)
+        self.kraj_igre = (False, False)  # (zavrsena_igra, zavrsena_pobedom)
         self.__initialized = True
 
     @property
@@ -43,7 +43,7 @@ class Igra:
         tip_partije = Igra.__unos_podataka_o_partiji("Odaberite vrstu igre:\n1. Covek v. Covek\n2. Covek v. CPU\n")
         cpu_prvi = False
         if tip_partije:
-           cpu_prvi = Igra.__unos_podataka_o_partiji("Odaberite prvog igraca:\n1. Covek\n2. CPU\n")
+            cpu_prvi = Igra.__unos_podataka_o_partiji("Odaberite prvog igraca:\n1. Covek\n2. CPU\n")
 
         beli_prvi = Igra.__unos_podataka_o_partiji("Odaberite prvog igraca:\n1. Crni\n2. Beli\n")
 
@@ -52,7 +52,7 @@ class Igra:
 
     @classmethod
     def debug_konstrukcija(cls, n, tip_partije, cpu_prvi, beli_prvi):
-        cls.__instanca = Igra(n, tip_partije, cpu_prvi, beli_prvi )
+        cls.__instanca = Igra(n, tip_partije, cpu_prvi, beli_prvi)
         return cls.__instanca
 
     @classmethod
@@ -77,9 +77,9 @@ class Igra:
         try:
             print()
             n = int(input(poruka))
-            if  2 < n or n < 1:
+            if 2 < n or n < 1:
                 raise Exception("Morate uneti 1 ili 2, pokusajte ponovo")
-            return bool(n-1)
+            return bool(n - 1)
         except Exception as ex:
             print(ex)
             return Igra.__unos_podataka_o_partiji(poruka)
@@ -105,16 +105,19 @@ class Igra:
     def odigraj_potez(self, kliknuto, originalna_boja, idx):
         if kliknuto:
             if kliknuto.boja not in (Boje.BEZ, Boje.BEZ_TAMNA):
-                print(f"Na polju {kliknuto.slovo}{kliknuto.broj} vec stoji {"Beli" if kliknuto.boja == Boje.BELA else "Crni"} kamencic")
+                print(
+                    f"Na polju {kliknuto.slovo}{kliknuto.broj} vec stoji {"Beli" if kliknuto.boja == Boje.BELA else "Crni"} kamencic")
                 return False, originalna_boja
 
             kliknuto.boja = originalna_boja = Boje.BELA if self.trenutni_potez else Boje.CRNA
             self.trenutni_potez = not self.trenutni_potez
-            print(f"{"[CPU] " if self.cpu_partija and not self.cpu_na_potezu() else ""}{"C: " if kliknuto.boja == Boje.CRNA else "B: "}{kliknuto.slovo}{kliknuto.broj}")
+            print(
+                f"{"[CPU] " if self.cpu_partija and not self.cpu_na_potezu() else ""}{"C: " if kliknuto.boja == Boje.CRNA else "B: "}{kliknuto.slovo}{kliknuto.broj}")
 
             self.novo_stanje(idx)
             if self.tabla.provera_pobede(kliknuto):
-                print(f"{"[CPU] " if self.cpu_partija and not self.cpu_na_potezu() else ""}{"C:" if kliknuto.boja == Boje.CRNA else "B:" } Pobeda")
+                print(
+                    f"{"[CPU] " if self.cpu_partija and not self.cpu_na_potezu() else ""}{"C:" if kliknuto.boja == Boje.CRNA else "B:"} Pobeda")
                 self.kraj_igre = (True, True)
                 return True, kliknuto.boja
 

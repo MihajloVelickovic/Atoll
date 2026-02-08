@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 # tipovi unosa u transpozicionoj tabeli
 class CpuKonfig(Enum):
     TT_TACAN = 0  # tacna vrednost

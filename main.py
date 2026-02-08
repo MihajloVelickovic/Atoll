@@ -14,15 +14,15 @@ if __name__ == "__main__":
 
     gui = Gui()
 
+    # igra = Igra.debug_konstrukcija(5, True, True, False)
+    # igra = Igra.debug_konstrukcija(5, False, False, True)
     igra = Igra.konstrukcija()
     if igra.cpu_partija:
         Cpu.postavi_vreme_trazenja(igra.tabla.n)
-    #igra = Igra.debug_konstrukcija(5, True, True, False)
-    #igra = Igra.debug_konstrukcija(3, False, False, True)
     gui.init_pygame()
     gui.izracunaj_dimenzije_polja(igra.tabla.n)
 
-    #glavna petlja
+    # glavna petlja
     running = True
 
     # crtanje table pre pokretanja glavnog loopa
@@ -37,8 +37,6 @@ if __name__ == "__main__":
         # AI potez (pre event handling-a jer AI moze prvi da igra)
         if igra.cpu_partija and not igra.kraj_igre[0] and igra.cpu_na_potezu():
             igra.odigraj_cpu_potez(gui)
-            #time.sleep(0.5)
-            #continue
         else:
             for event in pygame.event.get():
 
@@ -79,7 +77,7 @@ if __name__ == "__main__":
 
                         # uppercase karakter koji je sada pretisnut
                         # reduntandno ako je broj ali sta da se radi
-                        najnovije_dugme= chr(event.key).upper()
+                        najnovije_dugme = chr(event.key).upper()
 
                         # ako je uneseno slovo, resetuje se lista koja pamti selekciju
                         # i novo slovo se postavlja za prvi element
@@ -95,7 +93,8 @@ if __name__ == "__main__":
                         # i s uslovom da mogu najvise 2 broja da se unesu,
                         # suzavamo selekciju na konkretno polje zadato prethodnim slovom, i novim brojem
                         # radi i za dvocifrene brojeve!!
-                        if '' not in selektovan_red_ili_polje and len(selektovan_red_ili_polje) < 3 and najnovije_dugme.isdigit():
+                        if '' not in selektovan_red_ili_polje and len(
+                                selektovan_red_ili_polje) < 3 and najnovije_dugme.isdigit():
                             selektovan_red_ili_polje.append(najnovije_dugme)
                             polje_str = ''.join(selektovan_red_ili_polje)
                             if igra.tabla[polje_str]:

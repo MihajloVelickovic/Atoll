@@ -6,8 +6,8 @@ from models.unionfind import UnionFind
 from src.models.tabla import Tabla
 from src.enums.boje import Boje
 
-class Cpu:
 
+class Cpu:
     # pretraga, u sekundama
     # pretraga, u sekundama
 
@@ -32,7 +32,7 @@ class Cpu:
 
     @staticmethod
     def postavi_vreme_trazenja(n):
-        Cpu.VREME_LIMIT = 2*n
+        Cpu.VREME_LIMIT = 2 * n
 
     @staticmethod
     def najbolji_potez(tabla, cpu_boja):

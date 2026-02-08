@@ -5,6 +5,7 @@ import platform
 import ctypes
 from src.gui.input import nadji_kliknuto_polje, primeni_hover_efekat, ukloni_hover_efekat
 
+
 class Gui:
 
     def __init__(self):

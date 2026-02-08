@@ -2,6 +2,7 @@ from src.gui.renderer import koordinate_polja
 from src.enums.boje import Boje
 from math import pi, sin, cos
 
+
 def nadji_kliknuto_polje(clicked_position, tabla, size_x, size_y, offset_x, offset_y):
     clicked_x, clicked_y = clicked_position
 
@@ -21,6 +22,7 @@ def nadji_kliknuto_polje(clicked_position, tabla, size_x, size_y, offset_x, offs
 
     return None, None
 
+
 # https://stackoverflow.com/a/2212851/30315841
 # adaptiran u python funkciju
 # shaut aut za dragog stranca
@@ -28,18 +30,19 @@ def tacka_u_poligonu(nvert, vertx, verty, testx, testy):
     i = j = c = False
     j = nvert - 1
     for i in range(0, nvert):
-        if( ( ( verty[i] > testy ) != ( verty[j] > testy ) ) and
-            ( testx < ( vertx[j] - vertx[i] ) * ( testy - verty[i] ) / ( verty[j] - verty[i] ) + vertx[i] ) ):
+        if (((verty[i] > testy) != (verty[j] > testy)) and
+                (testx < (vertx[j] - vertx[i]) * (testy - verty[i]) / (verty[j] - verty[i]) + vertx[i])):
             c = not c
         j = i
     return c
+
 
 # (xbase, ybase) je tacka oko koje se rotira tacka (x, y)
 # rotacija kontra kazaljki na satu :D
 def rotiraj_tacku(x, y, xbase, ybase, angle):
     new_coord = transliraj_tacku(x, y, -xbase, -ybase)[0:2]
     angle_rad = angle * pi / 180
-    rotmat = [[cos(angle_rad), sin(angle_rad)], [-sin(angle_rad),  cos(angle_rad)]]
+    rotmat = [[cos(angle_rad), sin(angle_rad)], [-sin(angle_rad), cos(angle_rad)]]
     rot_coord = [0, 0]
 
     for i, row in enumerate(rotmat):
@@ -48,15 +51,17 @@ def rotiraj_tacku(x, y, xbase, ybase, angle):
 
     return transliraj_tacku(rot_coord[0], rot_coord[1], xbase, ybase)[0:2]
 
+
 # translira tacku (x, y) za (tx, ty)
 def transliraj_tacku(x, y, tx, ty):
     point = [x, y, 1]
-    matrix = [[1, 0, tx], [0, 1, ty],[0, 0, 1]]
+    matrix = [[1, 0, tx], [0, 1, ty], [0, 0, 1]]
     new_coord = [0, 0, 0]
     for i, row in enumerate(matrix):
         for j, p in enumerate(point):
             new_coord[i] += p * row[j]
     return new_coord
+
 
 # primenjuje hover efekat na polje i vraca originalnu boju
 def primeni_hover_efekat(polje):
@@ -71,11 +76,10 @@ def primeni_hover_efekat(polje):
     elif polje.boja == Boje.BELA:
         polje.boja = Boje.SVETLOSIVA
 
-    # print(f"orig. boja {originalna_boja} primenjena boja:{polje.boja}") #debug
     return originalna_boja
+
 
 # vraca originalnu boju polja
 def ukloni_hover_efekat(polje, originalna_boja):
     if polje is not None and originalna_boja is not None:
         polje.boja = originalna_boja
-

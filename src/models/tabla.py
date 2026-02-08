@@ -5,10 +5,11 @@ from src.models.ostrvo import Ostrvo
 from src.enums.boje import Boje
 from src.models.polje import Polje
 
+
 class Tabla:
     def __init__(self, n):
         self.__n = n
-        self.__uslov_pobede = 7 # broj ostrva / 2, broj ostrva je uvek 12
+        self.__uslov_pobede = 7  # broj ostrva / 2, broj ostrva je uvek 12
         self.__raspored_polja = []
         self.__putevi = [[[False for _ in range(5)] for _ in range(6)] for _ in range(2)]
         self.__ostrva = [Ostrvo() for _ in range(12)]
@@ -17,7 +18,7 @@ class Tabla:
         self.__generisi_tablu()
         self.__inicijalizuj_zobrist()
 
-    #region Pomocne funkcije, funkcije simulacije , getteri, overrideovi
+    # region Pomocne funkcije, funkcije simulacije , getteri, overrideovi
 
     # override za []
     def __getitem__(self, key):
@@ -30,7 +31,8 @@ class Tabla:
 
         if len(stripped) == 2:
             polje = \
-            [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize() and x.broj == int(stripped[1])][0]
+                [x for x in self.__raspored_polja if
+                 x.slovo == stripped[0].capitalize() and x.broj == int(stripped[1])][0]
             index = self.__raspored_polja.index(polje)
             for o in self.__ostrva:
                 if index in o.polja:
@@ -43,7 +45,7 @@ class Tabla:
                 return [x for x in self.__raspored_polja if x.slovo == stripped[0].capitalize()]
             return None
 
-    @property #pretvara metodu u atribut
+    @property  # pretvara metodu u atribut
     def raspored_polja(self):
         return self.__raspored_polja
 
@@ -93,7 +95,7 @@ class Tabla:
         for i in self.__ostrva:
             polja = [self.__raspored_polja[x] for x in i.polja]
             susedi = [self.__raspored_polja[x] for x in range(0, len(self.__raspored_polja)) if x in i.susedi]
-            print(polja,": ", susedi)
+            print(polja, ": ", susedi)
 
     def koordinate_polja(self, polje):
         # Slovo -> col
@@ -197,7 +199,7 @@ class Tabla:
 
         # proveri sve parove aktivnih ostrva za puteve
         for i, o1 in enumerate(aktivna_ostrva):
-            for o2 in aktivna_ostrva[i+1:]:
+            for o2 in aktivna_ostrva[i + 1:]:
                 if self.__postoji_put_simulacija(o1, o2):
                     # izracunaj duzinu obodnog puta
                     idx1 = self.__ostrva.index(o1)
@@ -252,9 +254,9 @@ class Tabla:
 
         return min(cw, ccw)
 
-    #endregion
+    # endregion
 
-    #region Generisanje table
+    # region Generisanje table
 
     def __generisi_tablu(self):
         self.__generisi_sva_polja()
@@ -278,7 +280,7 @@ class Tabla:
                     if i == 0:
                         granica = True
                         # prva polovina redova (brojeva)
-                        if j < (self.__n + 1)/2:
+                        if j < (self.__n + 1) / 2:
                             boja = Boje.CRNA
                             ostrvo = 11
                         # druga polovina redova (brojeva)
@@ -325,7 +327,7 @@ class Tabla:
                     ostrvo = None
                     if i == 2 * self.__n:
                         granica = True
-                        if j < self.__n + (self.__n + 1)/2:
+                        if j < self.__n + (self.__n + 1) / 2:
                             boja = Boje.BELA
                             ostrvo = 4
                         else:
@@ -354,7 +356,7 @@ class Tabla:
                         boja = Boje.BEZ
                         granica = False
 
-                    self.__raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, ostrvo=ostrvo,boja=boja))
+                    self.__raspored_polja.append(Polje(slovo=slovo, broj=j, granica=granica, ostrvo=ostrvo, boja=boja))
 
     def __obrisi_nepostojece(self):
         ids = []
@@ -411,13 +413,13 @@ class Tabla:
 
                 for j in ids:
                     slovo = chr(ord('A') + ((ord(polje.slovo) - ord('A') + i) % 26))
-                    sused = Polje(slovo = slovo, broj = polje.broj+j)
+                    sused = Polje(slovo=slovo, broj=polje.broj + j)
                     if sused in self.__raspored_polja and sused != polje:
                         polje.susedi.append(self.__raspored_polja.index(sused))
 
-    #endregion
+    # endregion
 
-    #region Provera pobede
+    # region Provera pobede
 
     # mozda nije najbolje ime
     # ali funkcija je tablin deo odigravanja poteza
@@ -493,7 +495,7 @@ class Tabla:
                 putevi_index = 0 if boja == Boje.CRNA else 1
                 # bool za stampanje u konzolu novih puteva
                 # todo optimizacija
-                stampaj_put = not self.__putevi[putevi_index][i][j-1]
+                stampaj_put = not self.__putevi[putevi_index][i][j - 1]
                 index2 = ostrva_date_boje[j]
                 try:
                     postoji = (True if skup_svih_puteva[j][(i - 1) % 5] else
@@ -545,7 +547,7 @@ class Tabla:
             # svi indeski, i indeksi koji dolaze u obzir
             # prilikom provere duzine puta u smeru suprotnom kretanju kazaljke na satu
             indeksi_counter_clockwise_potrebni = [i % 12 for i in range(index_i - 2, index_i - 12, -2)]
-            indeksi_counter_clockwise_svi = [i % 12 for i in range(index_i, index_i - 12,-1)]
+            indeksi_counter_clockwise_svi = [i % 12 for i in range(index_i, index_i - 12, -1)]
 
             # pomocne liste gde se dodaju sve duzine za dato ostrvo
             # iz njih ce se izvuci maksimalna
@@ -599,7 +601,7 @@ class Tabla:
                 # najmanji pronadjen indeks ostrva se pretvara u indeks za T/F listu
                 # (lista listi disjunktno povezanih ostrva je iste strukture)
                 index_postojece_disjunktne_liste = (index_postojece_disjunktne_liste // 2 -
-                                                   (1 if index_postojece_disjunktne_liste > index_i else 0))
+                                                    (1 if index_postojece_disjunktne_liste > index_i else 0))
                 lista_duzina_obodnih_puteva[index_postojece_disjunktne_liste].append(max(temp_lista_cw))
                 lista_duzina_obodnih_puteva[index_postojece_disjunktne_liste].append(max(temp_lista_ccw))
                 if novi_put:
@@ -616,4 +618,4 @@ class Tabla:
 
         return False
 
-    #endregion
+    # endregion

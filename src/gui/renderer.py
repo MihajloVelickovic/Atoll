@@ -4,46 +4,42 @@ import math
 from src.enums.boje import Boje
 
 
+# konvertuje axial koordinate u pixel koordinate
+# flattop orijentacija (ravna ivica gore/dole)
 def axial_to_pixel(q, r, size):
-    # konvertuje axial koordinate u pixel koordinate.
-    # flattop orijentacija (ravna ivica gore/dole).
-
     x = size * (3 / 2 * q)
     y = size * (math.sqrt(3) / 2 * q + math.sqrt(3) * r)
     return x, y
 
+
+# vraca pixel koordinate centra polja na ekranu
 def koordinate_polja(polje, tabla, size, offset_x, offset_y):
-    # vraca pixel koordinate centra polja na ekranu.
     q, r = tabla.koordinate_polja(polje)
     x, y = axial_to_pixel(q, r, size)
     return x + offset_x, y + offset_y
 
 
+# crta jedno heksagonalno polje (flattop orijentacija)
 def nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y, labele):
-    # crta jedno heksagonalno polje (flattop orijentacija)
     q, r = tabla.koordinate_polja(polje)
     x, y = axial_to_pixel(q, r, size)
     cx = x + offset_x
     cy = y + offset_y
 
-    # nacrtaj heksagon - FLAT-TOP (ravna ivica gore/dole)
+    # crtanje hexagona
     points = []
     for i in range(6):
-        angle = math.pi / 3 * i  # BEZ rotacije za flattop
+        angle = math.pi / 3 * i  # bez rotacije za flattop
         px = cx + size * math.cos(angle)
         py = cy + size * math.sin(angle)
         points.append((px, py))
 
-    # Odredi boju
     color = polje.boja.value
-
-    # nacrtaj popunjeni heksagon
     pygame.draw.polygon(screen, color, points)
-
-    # nacrtaj ivicu
+    # crtanje ivice
     pygame.draw.polygon(screen, (100, 90, 70), points, 2)
 
-    # dodaj tekst SAMO za negranična polja
+    # oznaka polja
     if not polje.granica[0] and labele:
         font = pygame.font.Font(None, 18)
         label = f"{polje.slovo}{polje.broj}"
@@ -52,15 +48,15 @@ def nacrtaj_polje(screen, tabla, polje, size, offset_x, offset_y, labele):
         screen.blit(text, text_rect)
 
 
+# crta labele (slova i brojeve) van granicnih polja
 def nacrtaj_labele(screen, tabla, size, offset_x, offset_y):
-    # crta labele (slova i brojeve) van granicnih polja
     font = pygame.font.Font(None, 22)
 
     n = tabla.n
 
-    # dinamicki odredi middle slovo (G za n=7, E za n=5, C za n=3)
-    # Z je kolona 0, A je kolona 1, pa middle je kolona n
-    middle_slovo = chr(ord('Z') + n) if n == 0 else chr(ord('A') + n - 1)
+    # dinamicki odredi slovo za red u sredini (G za n=7, E za n=5, C za n=3)
+    # Z je kolona 0, A je kolona 1, middle je kolona n
+    srednja_kolona_slovo = chr(ord('Z') + n) if n == 0 else chr(ord('A') + n - 1)
 
     # prvo nacrtaj labele za granicna polja
     for polje in tabla.raspored_polja:
@@ -72,56 +68,52 @@ def nacrtaj_labele(screen, tabla, size, offset_x, offset_y):
         cx = x + offset_x
         cy = y + offset_y
 
-        # odredi labelu i offset
         label_offset_x, label_offset_y = 0, 0
 
         col = 0 if polje.slovo == 'Z' else ord(polje.slovo) - ord('A') + 1
         row = polje.broj
 
-        # LEVA VERTIKALA (Z kolona) - brojevi levo
+        # leva vertikala (Z kolona) - brojevi levo
         if polje.slovo == 'Z':
             label = f"{polje.broj}"
             label_offset_x = -size * 1.5
             label_offset_y = size * 0.8
 
-        # DESNA VERTIKALA (N kolona) - brojevi desno
+        # desna vertikala (N kolona) - brojevi desno
         elif col == 2 * n:  # Dinamički - poslednja kolona
             label = f"{polje.broj}"
             label_offset_x = size * 1.5
             label_offset_y = -size * 0.8
 
-        # GORNJA LEVA DIJAGONALA (A do middle-1 sa row=0)
+        # gornja leva dijagonala (A do middle-1 sa row=0)
         elif row == 0 and 1 <= col < n:
             label = f"{polje.slovo}"
-            #label_offset_x = -size * 1.3
+            # label_offset_x = -size * 1.3
             label_offset_y = -size * 1.5
 
-        # GORNJI VRH (middle slovo sa row=0)
+        # vrh (middle slovo sa row=0)
         elif row == 0 and col == n:
             label = f"{polje.slovo}"
             label_offset_y = -size * 1.5
 
-        # GORNJA DESNA DIJAGONALA (middle+1 do pred-poslednje kolone gde je row=col-n)
-        elif col > n and col < 2 * n and row == col - n:
+        # gornja desna dijagonala (middle+1 do pretposlednje kolone gde je row=col-n)
+        elif n < col < 2 * n and row == col - n:
             label = f"{polje.slovo}"
-            #label_offset_x = size * 1.3
             label_offset_y = -size * 1.5
 
-        # DONJA LEVA DIJAGONALA (A do middle-1 gde je row=n+col)
+        # donja leva dijagonala (A do middle-1 gde je row=n+col)
         elif 1 <= col < n and row == n + col:
             label = f"{polje.slovo}"
-            #label_offset_x = -size * 1.3
             label_offset_y = size * 1.5
 
-        # DONJI VRH (middle slovo sa row=2*n)
+        # dno (middle slovo sa row=2*n)
         elif col == n and row == 2 * n:
             label = f"{polje.slovo}"
             label_offset_y = size * 1.5
 
-        # DONJA DESNA DIJAGONALA (middle+1 do pred-poslednje sa row=2*n)
-        elif col > n and col < 2 * n and row == 2 * n:
+        # donja desna dijagonala (middle + 1 do pretposlednje sa row=2*n)
+        elif n < col < 2 * n and row == 2 * n:
             label = f"{polje.slovo}"
-            #label_offset_x = size * 1.3
             label_offset_y = size * 1.5
 
         else:
@@ -131,36 +123,36 @@ def nacrtaj_labele(screen, tabla, size, offset_x, offset_y):
         text_rect = text.get_rect(center=(cx + label_offset_x, cy + label_offset_y))
         screen.blit(text, text_rect)
 
-    # dodaj dodatne middle labele iznad prvog i ispod poslednjeg neegranicnog middle polja
-    middle_polja = [p for p in tabla.raspored_polja
-                    if p.slovo == middle_slovo and not p.granica]
+    # dodavanje dodatne labele iznad prvog i ispod poslednjeg negranicnog srednjeg polja
+    srednja_kolona_polja = [p for p in tabla.raspored_polja
+                            if p.slovo == srednja_kolona_slovo and not p.granica]
 
-    if middle_polja:
+    if srednja_kolona_polja:
         # najmanji broj (obicno 1)
-        prvi = min(middle_polja, key=lambda p: p.broj)
+        prvi = min(srednja_kolona_polja, key=lambda p: p.broj)
         q, r = tabla.koordinate_polja(prvi)
         x, y = axial_to_pixel(q, r, size)
         cx = x + offset_x
         cy = y + offset_y - size * 3
 
-        text = font.render(middle_slovo, True, (220, 220, 220))
+        text = font.render(srednja_kolona_slovo, True, (220, 220, 220))
         text_rect = text.get_rect(center=(cx, cy))
         screen.blit(text, text_rect)
 
         # najveci broj
-        poslednji = max(middle_polja, key=lambda p: p.broj)
+        poslednji = max(srednja_kolona_polja, key=lambda p: p.broj)
         q, r = tabla.koordinate_polja(poslednji)
         x, y = axial_to_pixel(q, r, size)
         cx = x + offset_x
         cy = y + offset_y + size * 3
 
-        text = font.render(middle_slovo, True, (220, 220, 220))
+        text = font.render(srednja_kolona_slovo, True, (220, 220, 220))
         text_rect = text.get_rect(center=(cx, cy))
         screen.blit(text, text_rect)
 
 
+# izracunava offset za centriranje table na ekranu
 def izracunaj_offset(tabla, size, screen_width, screen_height):
-    # izracunava offset za centriranje table na ekranu
     min_q = min_r = float('inf')
     max_q = max_r = float('-inf')
 
@@ -200,7 +192,9 @@ def nacrtaj_tablu(screen, tabla, size=30, labele=False):
 
     return offset_x, offset_y
 
-def prikazi_kraj_nema_slobodnih(screen):
+
+# prikazuje tekstualnu poruku preko celog ekrana
+def prikazi_text_overlay(screen, text):
     overlay = pygame.Surface((screen.get_width(), screen.get_height()))
     overlay.set_alpha(180)
     overlay.fill((10, 10, 50))
@@ -208,18 +202,17 @@ def prikazi_kraj_nema_slobodnih(screen):
 
     font = pygame.font.Font(None, 50)
     text_color = (255, 255, 100)
-    text = font.render("Kraj igre. Nema više slobodnih polja.", True, text_color)
+
+    text = font.render(text, True, text_color)
     rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
     screen.blit(text, rect)
+
+
+def prikazi_kraj_nema_slobodnih(screen):
+    text = "Kraj igre. Nema više slobodnih polja."
+    prikazi_text_overlay(screen, text)
+
 
 def prikazi_kraj_pobeda(screen, pobednik):
-    overlay = pygame.Surface((screen.get_width(), screen.get_height()))
-    overlay.set_alpha(180)
-    overlay.fill((10, 10, 50))
-    screen.blit(overlay, (0, 0))
-
-    font = pygame.font.Font(None, 50)
-    text_color = (255, 255, 100)
-    text = font.render(f"Kraj igre. {"Crni" if pobednik == Boje.CRNA else "Beli"} igrač je pobedio.", True, text_color)
-    rect = text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 2))
-    screen.blit(text, rect)
+    text = f"Kraj igre. {"Crni" if pobednik == Boje.CRNA else "Beli"} igrač je pobedio."
+    prikazi_text_overlay(screen, text)
