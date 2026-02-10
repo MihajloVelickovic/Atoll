@@ -1,4 +1,4 @@
-from enums.cpukonfig import CpuKonfig
+from src.enums.cpukonfig import CpuKonfig
 from src.models.cpu import Cpu
 from src.gui.gui import Gui
 from src.gui.input import primeni_hover_efekat, ukloni_hover_efekat

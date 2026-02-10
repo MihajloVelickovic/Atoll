@@ -1,8 +1,8 @@
 import time
 from collections import deque
 
-from enums.cpukonfig import CpuKonfig
-from models.unionfind import UnionFind
+from src.enums.cpukonfig import CpuKonfig
+from src.models.unionfind import UnionFind
 from src.models.tabla import Tabla
 from src.enums.boje import Boje
 
